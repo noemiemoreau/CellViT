@@ -1,6 +1,6 @@
 # dataset paths
-wsi_paths: /scratch/nmoreau/CellVit/WSIs/A_hNiere_S3_PAS1.png
-output_path: /scratch/nmoreau/CellVit/preprocessing
+wsi_paths: /scratch/nmoreau/glom_seg/CellVit/WSIs/A_hNiere_S3_PAS1.png
+output_path: /scratch/nmoreau/glom_seg/CellVit/preprocessing
 
 # basic setups
 patch_size: 1024
