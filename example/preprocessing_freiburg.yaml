@@ -1,5 +1,5 @@
 # dataset paths
-wsi_paths: /scratch/nmoreau/glom_seg/CellVit/WSIs/A_hNiere_S3_PAS1.png
+wsi_paths: /scratch/nmoreau/glom_seg/CellVit/WSIs/A_hNiere_S3_PAS1.tif
 output_path: /scratch/nmoreau/glom_seg/CellVit/preprocessing
 
 # basic setups
