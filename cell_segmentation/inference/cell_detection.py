@@ -399,7 +399,7 @@ class CellSegmentationInference:
                         bb_index[0, :] = np.floor(bb_index[0, :])
                         bb_index[1, :] = np.ceil(bb_index[1, :])
                         bb_index = bb_index.astype(np.uint8)
-                        print(f"Token-Shape-Patch: {idx.shape}")
+                        print(f"Token-Shape-Patch: {idx}")
                         cell_token = tokens[
                             idx,
                             :,
