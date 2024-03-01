@@ -404,17 +404,17 @@ class CellViTTrainer(BaseTrainer):
             scalar_metrics[f"{tissue}-bPQ/Validation"] = np.nanmean(
                 pq_scores[tissue_ids]
             )
-            scalar_metrics[f"{tissue}-mPQ/Validation"] = np.nanmean(
-                [np.nanmean(pq) for pq in np.array(cell_type_pq_scores)[tissue_ids]]
-            )
+            # scalar_metrics[f"{tissue}-mPQ/Validation"] = np.nanmean(
+            #     [np.nanmean(pq) for pq in np.array(cell_type_pq_scores)[tissue_ids]]
+            # )
 
         # calculate nuclei metrics
-        for nuc_name, nuc_type in self.nuclei_types.items():
-            if nuc_name.lower() == "background":
-                continue
-            scalar_metrics[f"{nuc_name}-PQ/Validation"] = np.nanmean(
-                [pq[nuc_type] for pq in cell_type_pq_scores]
-            )
+        # for nuc_name, nuc_type in self.nuclei_types.items():
+        #     if nuc_name.lower() == "background":
+        #         continue
+        #     scalar_metrics[f"{nuc_name}-PQ/Validation"] = np.nanmean(
+        #         [pq[nuc_type] for pq in cell_type_pq_scores]
+        #     )
 
         self.logger.info(
             f"{'Validation epoch stats:' : <25} "
