@@ -568,17 +568,17 @@ class CellViTTrainer(BaseTrainer):
             torch.float32
         )  # background, nuclei
         nuclei_type_maps = torch.squeeze(masks["nuclei_type_map"]).type(torch.int64)
-        gt_nuclei_type_maps_onehot = F.one_hot(
-            nuclei_type_maps, num_classes=self.num_classes
-        ).type(
-            torch.float32
-        )  # background + nuclei types
+        # gt_nuclei_type_maps_onehot = F.one_hot(
+        #     nuclei_type_maps, num_classes=self.num_classes
+        # ).type(
+        #     torch.float32
+        # )  # background + nuclei types
 
         # assemble ground truth dictionary
         gt = {
-            "nuclei_type_map": gt_nuclei_type_maps_onehot.permute(0, 3, 1, 2).to(
-                self.device
-            ),  # shape: (batch_size, H, W, num_nuclei_classes)
+            # "nuclei_type_map": gt_nuclei_type_maps_onehot.permute(0, 3, 1, 2).to(
+            #     self.device
+            # ),  # shape: (batch_size, H, W, num_nuclei_classes)
             "nuclei_binary_map": gt_nuclei_binary_map_onehot.permute(0, 3, 1, 2).to(
                 self.device
             ),  # shape: (batch_size, H, W, 2)
@@ -586,13 +586,13 @@ class CellViTTrainer(BaseTrainer):
             "instance_map": masks["instance_map"].to(
                 self.device
             ),  # shape: (batch_size, H, W) -> each instance has one integer
-            "instance_types_nuclei": (
-                gt_nuclei_type_maps_onehot * masks["instance_map"][..., None]
-            )
-            .permute(0, 3, 1, 2)
-            .to(
-                self.device
-            ),  # shape: (batch_size, num_nuclei_classes, H, W) -> instance has one integer, for each nuclei class
+            # "instance_types_nuclei": (
+            #     gt_nuclei_type_maps_onehot * masks["instance_map"][..., None]
+            # )
+            # .permute(0, 3, 1, 2)
+            # .to(
+            #     self.device
+            # ),  # shape: (batch_size, num_nuclei_classes, H, W) -> instance has one integer, for each nuclei class
             "tissue_types": torch.Tensor([self.tissue_types[t] for t in tissue_types])
             .type(torch.LongTensor)
             .to(self.device),  # shape: batch_size
