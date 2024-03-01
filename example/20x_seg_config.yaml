@@ -15,7 +15,7 @@ random_seed: 19
 gpu: 0
 data:
   dataset: pannuke
-  dataset_path: /scratch/nmoreau/glom_seg/CellVit/pannuke_output_20x/
+  dataset_path: /scratch/nmoreau/glom_seg/CellVit/pannuke_output_40x/
   magnification: 20
   train_folds:
   - 0
