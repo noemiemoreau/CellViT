@@ -16,7 +16,7 @@ sys.path.insert(0, parentdir)
 import wandb
 
 from base_ml.base_cli import ExperimentBaseParser
-from cell_segmentation.experiments.experiment_cellvit_pannuke import (
+from cell_segmentation.experiments.experiment_cellvit_pannuke_seg import (
     ExperimentCellVitPanNuke,
 )
 from cell_segmentation.experiments.experiment_cellvit_conic import (
