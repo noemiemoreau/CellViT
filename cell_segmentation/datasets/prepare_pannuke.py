@@ -113,7 +113,7 @@ if __name__ == "__main__":
     magnification = int(configuration["magnification"])
     print(magnification)
 
-    if magnification != 40 or magnification != 20:
+    if magnification != 40 and magnification != 20:
         raise RuntimeError("magnification need to be 40 or 20")
 
     for fold in [0, 1, 2]:
