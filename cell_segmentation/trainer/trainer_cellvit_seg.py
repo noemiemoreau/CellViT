@@ -521,11 +521,11 @@ class CellViTTrainer(BaseTrainer):
         ) = self.model.calculate_instance_map(
             predictions, self.magnification
         )  # shape: (batch_size, H, W)
-        predictions["instance_types_nuclei"] = self.model.generate_instance_nuclei_map(
-            predictions["instance_map"], predictions["instance_types"]
-        ).to(
-            self.device
-        )  # shape: (batch_size, num_nuclei_classes, H, W)
+        # predictions["instance_types_nuclei"] = self.model.generate_instance_nuclei_map(
+        #     predictions["instance_map"]
+        # ).to(
+        #     self.device
+        # )  # shape: (batch_size, num_nuclei_classes, H, W)
 
         if "regression_map" not in predictions.keys():
             predictions["regression_map"] = None
@@ -537,7 +537,7 @@ class CellViTTrainer(BaseTrainer):
             tissue_types=predictions["tissue_types"],
             instance_map=predictions["instance_map"],
             instance_types=predictions["instance_types"],
-            instance_types_nuclei=predictions["instance_types_nuclei"],
+            instance_types_nuclei=None,
             batch_size=predictions["tissue_types"].shape[0],
             regression_map=predictions["regression_map"],
             num_nuclei_classes=self.num_classes,
