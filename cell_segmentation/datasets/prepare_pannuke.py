@@ -9,6 +9,8 @@ import inspect
 import os
 import sys
 
+import cv2
+
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
@@ -23,7 +25,7 @@ import argparse
 from cell_segmentation.utils.metrics import remap_label
 
 
-def process_fold(fold, input_path, output_path) -> None:
+def process_fold(fold, input_path, output_path, magnification) -> None:
     fold_path = Path(input_path) / f"fold{fold}"
     output_fold_path = Path(output_path) / f"fold{fold}"
     output_fold_path.mkdir(exist_ok=True, parents=True)
@@ -40,6 +42,10 @@ def process_fold(fold, input_path, output_path) -> None:
         outname = f"{fold}_{i}.png"
         out_img = images[i]
         im = Image.fromarray(out_img.astype(np.uint8))
+        if magnification == 40:
+            pass
+        elif magnification == 20:
+            im = im.reduce(2)
         im.save(output_fold_path / "images" / outname)
 
     print("Process masks")
@@ -48,7 +54,11 @@ def process_fold(fold, input_path, output_path) -> None:
 
         # need to create instance map and type map with shape 256x256
         mask = masks[i]
-        inst_map = np.zeros((256, 256))
+        if magnification == 40:
+            inst_map = np.zeros((256, 256))
+        elif magnification == 20:
+            mask = mask.resize((128, 128), cv2.INTER_NEAREST)
+            inst_map = np.zeros((128, 128))
         num_nuc = 0
         for j in range(5):
             # copy value from new array if value is not equal 0
@@ -58,7 +68,10 @@ def process_fold(fold, input_path, output_path) -> None:
             num_nuc = num_nuc + np.max(layer_res)
         inst_map = remap_label(inst_map)
 
-        type_map = np.zeros((256, 256)).astype(np.int32)
+        if magnification == 40:
+            type_map = np.zeros((256, 256)).astype(np.int32)
+        elif magnification == 20:
+            type_map = np.zeros((128, 128)).astype(np.int32)
         for j in range(5):
             layer_res = ((j + 1) * np.clip(mask[:, :, j], 0, 1)).astype(np.int32)
             type_map = np.where(layer_res != 0, layer_res, type_map)
@@ -84,12 +97,23 @@ parser.add_argument(
     required=True,
 )
 
+parser.add_argument(
+    "--magnification",
+    type=str,
+    help="magnification for training (default: 40)",
+    default=40,
+)
+
 if __name__ == "__main__":
     opt = parser.parse_args()
     configuration = vars(opt)
 
     input_path = Path(configuration["input_path"])
     output_path = Path(configuration["output_path"])
+    magnification = int(configuration["magnification"])
+
+    if magnification != 40 or magnification != 20:
+        raise RuntimeError("magnification need to be 40 or 20")
 
     for fold in [0, 1, 2]:
-        process_fold(fold, input_path, output_path)
+        process_fold(fold, input_path, output_path, magnification)
