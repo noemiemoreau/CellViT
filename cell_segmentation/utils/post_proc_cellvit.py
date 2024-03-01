@@ -86,7 +86,7 @@ class DetectionCellPostProcessor:
             pred_type = pred_type.astype(np.int32)
         else:
             pred_inst = pred_map
-
+        print(pred_inst.shape)
         pred_inst = np.squeeze(pred_inst)
         pred_inst = self.__proc_np_hv(
             pred_inst, object_size=self.object_size, ksize=self.k_size

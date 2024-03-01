@@ -376,6 +376,7 @@ class CellViT(nn.Module):
                 ],
                 axis=-1,
             )
+            print(pred_map.shape)
             instance_pred = cell_post_processor.post_process_cell_segmentation(pred_map)
             instance_preds.append(instance_pred[0])
             # type_preds.append(instance_pred[1])
