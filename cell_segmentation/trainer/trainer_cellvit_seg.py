@@ -516,8 +516,8 @@ class CellViTTrainer(BaseTrainer):
         #     predictions["nuclei_type_map"], dim=1
         # )  # shape: (batch_size, num_nuclei_classes, H, W)
         (
-            predictions["instance_map"],
-            predictions["instance_types"],
+            predictions["instance_map"]
+            # predictions["instance_types"],
         ) = self.model.calculate_instance_map(
             predictions, self.magnification
         )  # shape: (batch_size, H, W)
