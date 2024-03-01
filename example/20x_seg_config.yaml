@@ -8,6 +8,7 @@ logging:
   - ViT256
   - x20
   wandb_dir: /scratch/nmoreau/glom_seg/CellVit/results/pannuke/
+  log_dir: /scratch/nmoreau/glom_seg/CellVit/results/pannuke/log/
   level: Debug
   group: CellViT256-x20
 random_seed: 19
