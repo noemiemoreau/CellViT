@@ -111,6 +111,7 @@ if __name__ == "__main__":
     input_path = Path(configuration["input_path"])
     output_path = Path(configuration["output_path"])
     magnification = int(configuration["magnification"])
+    print(magnification)
 
     if magnification != 40 or magnification != 20:
         raise RuntimeError("magnification need to be 40 or 20")
