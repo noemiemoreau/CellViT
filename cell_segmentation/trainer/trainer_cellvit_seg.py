@@ -599,7 +599,7 @@ class CellViTTrainer(BaseTrainer):
         }
         if "regression_map" in masks:
             gt["regression_map"] = masks["regression_map"].to(self.device)
-
+        print(gt.keys())
         gt = DataclassHVStorage(
             **gt,
             batch_size=gt["tissue_types"].shape[0],
