@@ -69,8 +69,14 @@ def process_fold(fold, input_path, output_path, magnification) -> None:
             layer_res = ((j + 1) * np.clip(mask[:, :, j], 0, 1)).astype(np.int32)
             type_map = np.where(layer_res != 0, layer_res, type_map)
 
-        inst_map = inst_map.resize((128,128))
-        type_map = type_map.resize((128,128))
+        if magnification == 20:
+            inst_map_pil = Image.fromarray(inst_map)
+            inst_map_pil = inst_map_pil.resize((128, 128), cv2.INTER_NEAREST)
+            inst_map = np.array(inst_map_pil)
+
+            type_map_pil = Image.fromarray(type_map)
+            type_map_pil = type_map_pil.resize((128, 128), cv2.INTER_NEAREST)
+            type_map = np.array(type_map_pil)
 
         outdict = {"inst_map": inst_map, "type_map": type_map}
         np.save(output_fold_path / "labels" / outname, outdict)
@@ -108,8 +114,13 @@ if __name__ == "__main__":
     output_path = Path(configuration["output_path"])
     magnification = int(configuration["magnification"])
 
+    # input_path = "/Users/nmoreau/Documents/Data/Kidney/new_organization/processed_data/cellvit/pannuke_input/"
+    # output_path = "/Users/nmoreau/Documents/Data/Kidney/new_organization/processed_data/cellvit/pannuke_output/"
+    # magnification = 20
+
     if magnification != 40 and magnification != 20:
         raise RuntimeError("magnification need to be 40 or 20")
 
     for fold in [0, 1, 2]:
+    # for fold in [0]:
         process_fold(fold, input_path, output_path, magnification)
