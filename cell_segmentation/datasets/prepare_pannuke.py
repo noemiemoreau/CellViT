@@ -54,11 +54,7 @@ def process_fold(fold, input_path, output_path, magnification) -> None:
 
         # need to create instance map and type map with shape 256x256
         mask = masks[i]
-        if magnification == 40:
-            inst_map = np.zeros((256, 256))
-        elif magnification == 20:
-            mask = mask.resize((128, 128), cv2.INTER_NEAREST)
-            inst_map = np.zeros((128, 128))
+        inst_map = np.zeros((256, 256))
         num_nuc = 0
         for j in range(5):
             # copy value from new array if value is not equal 0
@@ -68,13 +64,13 @@ def process_fold(fold, input_path, output_path, magnification) -> None:
             num_nuc = num_nuc + np.max(layer_res)
         inst_map = remap_label(inst_map)
 
-        if magnification == 40:
-            type_map = np.zeros((256, 256)).astype(np.int32)
-        elif magnification == 20:
-            type_map = np.zeros((128, 128)).astype(np.int32)
+        type_map = np.zeros((256, 256)).astype(np.int32)
         for j in range(5):
             layer_res = ((j + 1) * np.clip(mask[:, :, j], 0, 1)).astype(np.int32)
             type_map = np.where(layer_res != 0, layer_res, type_map)
+
+        inst_map = inst_map.resize((128,128), cv2.INTER_NEAREST)
+        type_map = type_map.resize((128,128), cv2.INTER_NEAREST)
 
         outdict = {"inst_map": inst_map, "type_map": type_map}
         np.save(output_fold_path / "labels" / outname, outdict)
@@ -111,7 +107,6 @@ if __name__ == "__main__":
     input_path = Path(configuration["input_path"])
     output_path = Path(configuration["output_path"])
     magnification = int(configuration["magnification"])
-    print(magnification)
 
     if magnification != 40 and magnification != 20:
         raise RuntimeError("magnification need to be 40 or 20")
