@@ -1,5 +1,5 @@
 logging:
-  mode: online
+  mode: offline
   project: Cell-Segmentation
   notes: CellViT-256-x20
   log_comment: CellViT-256-Fold-1-x20
