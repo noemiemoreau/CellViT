@@ -680,16 +680,16 @@ class CellViTTrainer(BaseTrainer):
             .astype(np.uint8)
         )
         predictions["instance_map"] = predictions["instance_map"].detach().cpu()
-        predictions["instance_types_nuclei"] = (
-            predictions["instance_types_nuclei"].detach().cpu().numpy().astype("int32")
-        )
+        # predictions["instance_types_nuclei"] = (
+        #     predictions["instance_types_nuclei"].detach().cpu().numpy().astype("int32")
+        # )
         gt["tissue_types"] = gt["tissue_types"].detach().cpu().numpy().astype(np.uint8)
         gt["nuclei_binary_map"] = torch.argmax(gt["nuclei_binary_map"], dim=1).type(
             torch.uint8
         )
-        gt["instance_types_nuclei"] = (
-            gt["instance_types_nuclei"].detach().cpu().numpy().astype("int32")
-        )
+        # gt["instance_types_nuclei"] = (
+        #     gt["instance_types_nuclei"].detach().cpu().numpy().astype("int32")
+        # )
 
         tissue_detection_accuracy = accuracy_score(
             y_true=gt["tissue_types"], y_pred=pred_tissue
