@@ -76,7 +76,7 @@ class CellViT(nn.Module):
 
         self.patch_size = 16
         self.num_tissue_classes = num_tissue_classes
-        # self.num_nuclei_classes = num_nuclei_classes
+        self.num_nuclei_classes = num_nuclei_classes
         self.embed_dim = embed_dim
         self.input_channels = input_channels
         self.depth = depth
