@@ -69,8 +69,8 @@ def process_fold(fold, input_path, output_path, magnification) -> None:
             layer_res = ((j + 1) * np.clip(mask[:, :, j], 0, 1)).astype(np.int32)
             type_map = np.where(layer_res != 0, layer_res, type_map)
 
-        inst_map = inst_map.resize((128,128), cv2.INTER_NEAREST)
-        type_map = type_map.resize((128,128), cv2.INTER_NEAREST)
+        inst_map = inst_map.resize((128,128))
+        type_map = type_map.resize((128,128))
 
         outdict = {"inst_map": inst_map, "type_map": type_map}
         np.save(output_fold_path / "labels" / outname, outdict)
