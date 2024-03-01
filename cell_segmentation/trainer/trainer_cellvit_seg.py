@@ -536,7 +536,7 @@ class CellViTTrainer(BaseTrainer):
             nuclei_type_map=None,
             tissue_types=predictions["tissue_types"],
             instance_map=predictions["instance_map"],
-            instance_types=predictions["instance_types"],
+            instance_types=None,
             instance_types_nuclei=None,
             batch_size=predictions["tissue_types"].shape[0],
             regression_map=predictions["regression_map"],
