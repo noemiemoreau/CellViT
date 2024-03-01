@@ -533,11 +533,11 @@ class CellViTTrainer(BaseTrainer):
         predictions = DataclassHVStorage(
             nuclei_binary_map=predictions["nuclei_binary_map"],
             hv_map=predictions["hv_map"],
-            nuclei_type_map=None,
+            # nuclei_type_map=None,
             tissue_types=predictions["tissue_types"],
             instance_map=predictions["instance_map"],
-            instance_types=None,
-            instance_types_nuclei=None,
+            # instance_types=None,
+            # instance_types_nuclei=None,
             batch_size=predictions["tissue_types"].shape[0],
             regression_map=predictions["regression_map"],
             num_nuclei_classes=self.num_classes,
@@ -599,7 +599,6 @@ class CellViTTrainer(BaseTrainer):
         }
         if "regression_map" in masks:
             gt["regression_map"] = masks["regression_map"].to(self.device)
-        print(gt.keys())
         gt = DataclassHVStorage(
             **gt,
             batch_size=gt["tissue_types"].shape[0],
