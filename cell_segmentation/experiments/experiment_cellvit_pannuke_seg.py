@@ -51,7 +51,7 @@ from base_ml.base_loss import retrieve_loss_fn
 from base_ml.base_trainer import BaseTrainer
 from cell_segmentation.datasets.base_cell import CellDataset
 from cell_segmentation.datasets.dataset_coordinator import select_dataset
-from cell_segmentation.trainer.trainer_cellvit import CellViTTrainer
+from cell_segmentation.trainer.trainer_cellvit_seg import CellViTTrainer
 from models.segmentation.cell_segmentation.cellvit_seg import (
     CellViT,
     CellViTSAM,
