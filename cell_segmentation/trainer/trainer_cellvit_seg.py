@@ -26,7 +26,7 @@ from torchmetrics.functional.classification import binary_jaccard_index
 
 from base_ml.base_early_stopping import EarlyStopping
 from base_ml.base_trainer import BaseTrainer
-from models.segmentation.cell_segmentation.cellvit import DataclassHVStorage
+from models.segmentation.cell_segmentation.cellvit_seg import DataclassHVStorage
 from cell_segmentation.utils.metrics import get_fast_pq, remap_label
 from cell_segmentation.utils.tools import cropping_center
 from models.segmentation.cell_segmentation.cellvit import CellViT

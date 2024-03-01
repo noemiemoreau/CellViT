@@ -698,9 +698,9 @@ class DataclassHVStorage:
     nuclei_binary_map: torch.Tensor
     hv_map: torch.Tensor
     tissue_types: torch.Tensor
-    nuclei_type_map: torch.Tensor
+    # nuclei_type_map: torch.Tensor
     instance_map: torch.Tensor
-    instance_types_nuclei: torch.Tensor
+    # instance_types_nuclei: torch.Tensor
     batch_size: int
     instance_types: list = None
     regression_map: torch.Tensor = None
