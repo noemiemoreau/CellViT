@@ -80,6 +80,8 @@ class DetectionCellPostProcessor:
                     For each instance, the dictionary contains the keys: bbox (bounding box), centroid (centroid coordinates),
                     contour, type_prob (probability), type (nuclei type)
         """
+        print(self.nr_types)
+        print(self.nr_types is not None)
         if self.nr_types is not None:
             print("here")
             pred_type = pred_map[..., :1]
