@@ -81,10 +81,12 @@ class DetectionCellPostProcessor:
                     contour, type_prob (probability), type (nuclei type)
         """
         if self.nr_types is not None:
+            print("here")
             pred_type = pred_map[..., :1]
             pred_inst = pred_map[..., 1:]
             pred_type = pred_type.astype(np.int32)
         else:
+            print("here2")
             pred_inst = pred_map
         print(pred_map.shape)
         print(pred_inst.shape)
