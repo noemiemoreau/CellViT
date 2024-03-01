@@ -702,7 +702,7 @@ class DataclassHVStorage:
     instance_map: torch.Tensor
     # instance_types_nuclei: torch.Tensor
     batch_size: int
-    instance_types: list = None
+    # instance_types: list = None
     regression_map: torch.Tensor = None
     regression_loss: bool = False
     h: int = 256
