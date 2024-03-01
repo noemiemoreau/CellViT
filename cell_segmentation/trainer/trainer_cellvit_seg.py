@@ -755,17 +755,17 @@ class CellViTTrainer(BaseTrainer):
             .astype(np.uint8)
         )
         predictions["instance_map"] = predictions["instance_map"].detach().cpu()
-        predictions["instance_types_nuclei"] = (
-            predictions["instance_types_nuclei"].detach().cpu().numpy().astype("int32")
-        )
+        # predictions["instance_types_nuclei"] = (
+        #     predictions["instance_types_nuclei"].detach().cpu().numpy().astype("int32")
+        # )
         instance_maps_gt = gt["instance_map"].detach().cpu()
         gt["tissue_types"] = gt["tissue_types"].detach().cpu().numpy().astype(np.uint8)
         gt["nuclei_binary_map"] = torch.argmax(gt["nuclei_binary_map"], dim=1).type(
             torch.uint8
         )
-        gt["instance_types_nuclei"] = (
-            gt["instance_types_nuclei"].detach().cpu().numpy().astype("int32")
-        )
+        # gt["instance_types_nuclei"] = (
+        #     gt["instance_types_nuclei"].detach().cpu().numpy().astype("int32")
+        # )
 
         tissue_detection_accuracy = accuracy_score(
             y_true=gt["tissue_types"], y_pred=pred_tissue
@@ -806,26 +806,26 @@ class CellViTTrainer(BaseTrainer):
 
             # pq values per class (skip background)
             nuclei_type_pq = []
-            for j in range(0, self.num_classes):
-                pred_nuclei_instance_class = remap_label(
-                    predictions["instance_types_nuclei"][i][j, ...]
-                )
-                target_nuclei_instance_class = remap_label(
-                    gt["instance_types_nuclei"][i][j, ...]
-                )
+            # for j in range(0, self.num_classes):
+            #     pred_nuclei_instance_class = remap_label(
+            #         predictions["instance_types_nuclei"][i][j, ...]
+            #     )
+            #     target_nuclei_instance_class = remap_label(
+            #         gt["instance_types_nuclei"][i][j, ...]
+            #     )
 
-                # if ground truth is empty, skip from calculation
-                if len(np.unique(target_nuclei_instance_class)) == 1:
-                    pq_tmp = np.nan
-                else:
-                    [_, _, pq_tmp], _ = get_fast_pq(
-                        pred_nuclei_instance_class,
-                        target_nuclei_instance_class,
-                        match_iou=0.5,
-                    )
-                nuclei_type_pq.append(pq_tmp)
-
-            cell_type_pq_scores.append(nuclei_type_pq)
+            #     # if ground truth is empty, skip from calculation
+            #     if len(np.unique(target_nuclei_instance_class)) == 1:
+            #         pq_tmp = np.nan
+            #     else:
+            #         [_, _, pq_tmp], _ = get_fast_pq(
+            #             pred_nuclei_instance_class,
+            #             target_nuclei_instance_class,
+            #             match_iou=0.5,
+            #         )
+            #     nuclei_type_pq.append(pq_tmp)
+            #
+            # cell_type_pq_scores.append(nuclei_type_pq)
 
         batch_metrics = {
             "binary_dice_scores": binary_dice_scores,
