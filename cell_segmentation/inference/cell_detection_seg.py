@@ -350,6 +350,7 @@ class CellSegmentationInference:
                         - (patch_metadata["col"] + 0.5) * overlap
                     )
 
+                    print(patch_instance_types)
                     # extract cell information
                     for cell in patch_instance_types.values():
                         # if cell["type"] == nuclei_types["Background"]:
