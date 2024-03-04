@@ -361,7 +361,7 @@ class CellViT(nn.Module):
             nr_types=self.num_nuclei_classes, magnification=magnification, gt=False
         )
         instance_preds = []
-        # type_preds = []
+        type_preds = []
 
         for i in range(predictions_["nuclei_binary_map"].shape[0]):
             pred_map = np.concatenate(
@@ -378,9 +378,9 @@ class CellViT(nn.Module):
             )
             instance_pred = cell_post_processor.post_process_cell_segmentation(pred_map)
             instance_preds.append(instance_pred[0])
-            # type_preds.append(instance_pred[1])
+            type_preds.append(instance_pred[1])
 
-        return torch.Tensor(np.stack(instance_preds))
+        return torch.Tensor(np.stack(instance_preds)), type_preds
 
     def generate_instance_nuclei_map(
         self, instance_maps: torch.Tensor, type_preds: List[dict]

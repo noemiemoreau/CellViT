@@ -318,13 +318,13 @@ class CellSegmentationInference:
                     predictions = self.model.forward(patches, retrieve_tokens=True)
                 # reshape, apply softmax to segmentation maps
                 # predictions = self.model.reshape_model_output(predictions_, self.device)
-                instance_preds, tokens = self.get_cell_predictions_with_tokens(
+                instance_types, tokens = self.get_cell_predictions_with_tokens(
                     predictions, magnification=wsi.metadata["magnification"]
                 )
                 print(f"Token-Shape: {tokens.shape}")
                 # unpack each patch from batch
                 for idx, (patch_instance_types, patch_metadata) in enumerate(
-                    zip(instance_preds, metadata)
+                    zip(instance_types, metadata)
                 ):
                     pbar.update(1)
                     # add global patch metadata
@@ -508,13 +508,13 @@ class CellSegmentationInference:
         # )  # shape: (batch_size, num_nuclei_classes, H, W)
         # get the instance types
         (
-            instance_preds
-            # instance_types,
+            instance_preds,
+            instance_types,
         ) = self.model.calculate_instance_map(predictions, magnification=magnification)
 
         tokens = predictions["tokens"].to("cpu")
 
-        return instance_preds, tokens
+        return instance_types, tokens
 
     def post_process_edge_cells(self, cell_list: List[dict]) -> List[int]:
         """Use the CellPostProcessor to remove multiple cells and merge due to overlap
