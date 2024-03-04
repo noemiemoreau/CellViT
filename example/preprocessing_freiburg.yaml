@@ -1,6 +1,6 @@
 # dataset paths
 wsi_paths: /scratch/nmoreau/glom_seg/CellVit/WSIs/A_hNiere_S3_PAS2.ome.tiff
-output_path: /scratch/nmoreau/glom_seg/CellVit/preprocessing
+output_path: /scratch/nmoreau/glom_seg/CellVit/cell_detection/A_hNiere_S3_PAS2/
 wsi_extension: tiff
 wsi_properties: {slide_mpp: 0.46500000000000002 , magnification: 20}
 
@@ -9,7 +9,7 @@ patch_size: 1024
 patch_overlap: 6.25
 target_mag: 20
 processes: 8
-overwrite: True
+overwrite: False
 
 # macenko stain normalization
 normalize_stains: True
