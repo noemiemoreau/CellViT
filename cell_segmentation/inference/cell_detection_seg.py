@@ -75,18 +75,10 @@ pandarallel.initialize(progress_bar=False, nb_workers=12)
 # color setup
 COLOR_DICT = {
     1: [255, 0, 0],
-    2: [34, 221, 77],
-    3: [35, 92, 236],
-    4: [254, 255, 0],
-    5: [255, 159, 68],
 }
 
 TYPE_NUCLEI_DICT = {
-    1: "Neoplastic",
-    2: "Inflammatory",
-    3: "Connective",
-    4: "Dead",
-    5: "Epithelial",
+    1: "Cell",
 }
 
 class CellSegmentationInference:
@@ -363,7 +355,7 @@ class CellSegmentationInference:
                             "centroid": centroid_global.tolist(),
                             "contour": contour_global.tolist(),
                             # "type_prob": cell["type_prob"],
-                            # "type": cell["type"],
+                            "type": 1,
                             "patch_coordinates": [
                                 patch_metadata["row"],
                                 patch_metadata["col"],
@@ -376,7 +368,7 @@ class CellSegmentationInference:
                         cell_detection = {
                             "bbox": bbox_global.tolist(),
                             "centroid": centroid_global.tolist(),
-                            # "type": cell["type"],
+                            "type": 1,
                         }
                         if np.max(cell["bbox"]) == 1024 or np.min(cell["bbox"]) == 0:
                             position = get_cell_position(cell["bbox"], 1024)
@@ -445,11 +437,11 @@ class CellSegmentationInference:
         }
         with open(str(outdir / "cells.json"), "w") as outfile:
             ujson.dump(cell_dict_wsi, outfile, indent=2)
-        # if geojson:
-        #     self.logger.info("Converting segmentation to geojson")
-        #     geojson_list = self.convert_geojson(cell_dict_wsi["cells"], True)
-        #     with open(str(str(outdir / "cells.geojson")), "w") as outfile:
-        #         ujson.dump(geojson_list, outfile, indent=2)
+        if geojson:
+            self.logger.info("Converting segmentation to geojson")
+            geojson_list = self.convert_geojson(cell_dict_wsi["cells"], True)
+            with open(str(str(outdir / "cells.geojson")), "w") as outfile:
+                ujson.dump(geojson_list, outfile, indent=2)
 
         cell_dict_detection = {
             "wsi_metadata": wsi.metadata,
@@ -459,11 +451,11 @@ class CellSegmentationInference:
         }
         with open(str(outdir / "cell_detection.json"), "w") as outfile:
             ujson.dump(cell_dict_detection, outfile, indent=2)
-        # if geojson:
-        #     self.logger.info("Converting detection to geojson")
-        #     geojson_list = self.convert_geojson(cell_dict_wsi["cells"], False)
-        #     with open(str(str(outdir / "cell_detection.geojson")), "w") as outfile:
-        #         ujson.dump(geojson_list, outfile, indent=2)
+        if geojson:
+            self.logger.info("Converting detection to geojson")
+            geojson_list = self.convert_geojson(cell_dict_wsi["cells"], False)
+            with open(str(str(outdir / "cell_detection.geojson")), "w") as outfile:
+                ujson.dump(geojson_list, outfile, indent=2)
 
         self.logger.info(
             f"Create cell graph with embeddings and save it under: {str(outdir / 'cells.pt')}"
