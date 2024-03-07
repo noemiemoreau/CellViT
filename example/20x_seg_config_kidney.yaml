@@ -81,7 +81,7 @@ training:
     weight_decay: 0.0001
   unfreeze_epoch: 25
   sampling_gamma: 0.85
-  sampling_strategy: None
+  sampling_strategy: random
 transformations:
   randomrotate90:
     p: 0.5
