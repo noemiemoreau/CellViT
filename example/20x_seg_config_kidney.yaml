@@ -27,7 +27,7 @@ data:
   num_tissue_classes: 1
 model:
   backbone: ViT256
-  pretrained_encoder: /scratch/nmoreau/glom_seg/CellVit/models/vit256_small_dino.pt
+  pretrained_encoder: /scratch/nmoreau/glom_seg/CellVit/models/vit256_small_dino.pth
   pretained: /scratch/nmoreau/glom_seg/CellVit/models/CellVit-256-x20_seg.pth
   shared_decoders: false
 loss:
