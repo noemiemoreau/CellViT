@@ -14,7 +14,7 @@ logging:
 random_seed: 19
 gpu: 0
 data:
-  dataset: pannuke
+  dataset: conic
   dataset_path: /scratch/nmoreau/glom_seg/CellVit/kidney_data/
   magnification: 20
   train_folds:
