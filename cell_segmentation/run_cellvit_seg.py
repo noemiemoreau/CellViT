@@ -19,7 +19,7 @@ from base_ml.base_cli import ExperimentBaseParser
 from cell_segmentation.experiments.experiment_cellvit_pannuke_seg import (
     ExperimentCellVitPanNuke,
 )
-from cell_segmentation.experiments.experiment_cellvit_conic import (
+from cell_segmentation.experiments.experiment_cellvit_conic_seg import (
     ExperimentCellViTCoNic,
 )
 
