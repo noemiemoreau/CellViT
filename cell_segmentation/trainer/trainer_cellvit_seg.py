@@ -238,6 +238,7 @@ class CellViTTrainer(BaseTrainer):
             1
         ]  # dict: keys: "instance_map", "nuclei_map", "nuclei_binary_map", "hv_map"
         tissue_types = batch[2]  # list[str]
+        print(tissue_types)
 
         if self.mixed_precision:
             with torch.autocast(device_type="cuda", dtype=torch.float16):
