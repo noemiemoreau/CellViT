@@ -1,8 +1,8 @@
 # dataset paths
-wsi_paths: /scratch/nmoreau/glom_seg/CellVit/WSIs/A_hNiere_S3_PAS2.ome.tiff
-output_path: /scratch/nmoreau/glom_seg/CellVit/cell_detection/A_hNiere_S3_PAS2/
+wsi_paths: /scratch/nmoreau/glom_seg/CellVit/WSIs/O_hNiere_S1_PAS2.ome.tiff
+output_path: /scratch/nmoreau/glom_seg/CellVit/cell_detection/O_hNiere_S1_PAS2/
 wsi_extension: tiff
-wsi_properties: {slide_mpp: 0.46500000000000002 , magnification: 20}
+wsi_properties: {slide_mpp: 0.4650000000000000 , magnification: 20}
 
 # basic setups
 patch_size: 1024
