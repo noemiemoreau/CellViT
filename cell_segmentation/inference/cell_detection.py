@@ -321,7 +321,7 @@ class CellSegmentationInference:
                 instance_types, tokens = self.get_cell_predictions_with_tokens(
                     predictions, magnification=wsi.metadata["magnification"]
                 )
-                print(f"Token-Shape: {tokens.shape}")
+
                 # unpack each patch from batch
                 for idx, (patch_instance_types, patch_metadata) in enumerate(
                     zip(instance_types, metadata)

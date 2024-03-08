@@ -18,7 +18,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from cell_segmentation.utils.post_proc_cellvit import DetectionCellPostProcessor
+from cell_segmentation.utils.post_proc_cellvit_seg import DetectionCellPostProcessor
 
 from .utils import Conv2DBlock, Deconv2DBlock, ViTCellViT, ViTCellViTDeit
 
