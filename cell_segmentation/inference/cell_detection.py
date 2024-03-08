@@ -351,7 +351,7 @@ class CellSegmentationInference:
                     )
 
                     # extract cell information
-                    print(patch_instance_types)
+                    # print(patch_instance_types)
                     for cell in patch_instance_types.values():
                         if cell["type"] == nuclei_types["Background"]:
                             continue
