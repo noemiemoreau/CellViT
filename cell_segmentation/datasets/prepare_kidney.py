@@ -29,6 +29,7 @@ if __name__ == "__main__":
     for image_name in os.listdir(WSIs_path):
         if not image_name.startswith("."):
             image_name = image_name[:-8]
+            print(image_name)
 
             with open(GTs_geojson_path + image_name + ".geojson", 'r') as f:
                 gson_cells_gt = json.load(f)
