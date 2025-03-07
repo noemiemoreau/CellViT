@@ -19,16 +19,16 @@ TYPE_NUCLEI_DICT = {
 }
 
 if __name__ == "__main__":
-    WSIs_path = "/Users/nmoreau/Documents/Data/Kidney/new_organization/processed_data/cellvit/kidney_data/fold1/WSIs/"
-    GTs_geojson_path = "/Users/nmoreau/Documents/Data/Kidney/new_organization/processed_data/cellvit/kidney_data/fold1/GTs_geojson/"
-    ROIs_geojson_path = "/Users/nmoreau/Documents/Data/Kidney/new_organization/processed_data/cellvit/kidney_data/fold1/ROIs_geojson/"
-    images_path = "/Users/nmoreau/Documents/Data/Kidney/new_organization/processed_data/cellvit/kidney_data/fold1/images/"
-    labels_path = "/Users/nmoreau/Documents/Data/Kidney/new_organization/processed_data/cellvit/kidney_data/fold1/labels/"
+    WSIs_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold0/WSIs/"
+    GTs_geojson_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold0/GTs_geojson/"
+    ROIs_geojson_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold0/ROIs_geojson/"
+    images_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold0/images/"
+    labels_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold0/labels/"
     TYPE_NUCLEI_DICT_inv = {TYPE_NUCLEI_DICT[k]: k for k in TYPE_NUCLEI_DICT.keys()}
     patch_size = (256, 256)
     for image_name in os.listdir(WSIs_path):
         if not image_name.startswith("."):
-            image_name = image_name[:-4]
+            image_name = image_name[:-8]
 
             with open(GTs_geojson_path + image_name + ".geojson", 'r') as f:
                 gson_cells_gt = json.load(f)
@@ -37,7 +37,7 @@ if __name__ == "__main__":
             rois_list = gson_rois_gt["features"]
             cells_gt_list = gson_cells_gt["features"]
 
-            WSI_pil = Image.open(WSIs_path + image_name + ".png")
+            WSI_pil = Image.open(WSIs_path + image_name + "_PAS.png")
             WSI_array = np.array(WSI_pil)
 
             for roi in rois_list:
@@ -77,8 +77,8 @@ if __name__ == "__main__":
                             GT_inst_map[cc, rr] = i
                             GT_type_map[cc, rr] = TYPE_NUCLEI_DICT_inv[name]
                 path_number = 0
-                for x in range(0, WSI_roi.shape[0], patch_size[0] // 4):
-                    for y in range(0, WSI_roi.shape[1], patch_size[1] // 4):
+                for x in range(0, WSI_roi.shape[0], patch_size[0]):
+                    for y in range(0, WSI_roi.shape[1], patch_size[1]):
                         path_number += 1
                         WSI_patch = WSI_roi[x:x + patch_size[0], y:y + patch_size[1]]
                         GT_inst_map_patch = GT_inst_map[x:x + patch_size[0], y:y + patch_size[1]]
@@ -92,10 +92,12 @@ if __name__ == "__main__":
 
                             outdict = {"inst_map": GT_inst_map_patch, "type_map": GT_type_map_patch}
                             np.save(labels_path + image_name + "_" + str(roi_id) + "_" + str(path_number) + ".npy", outdict)
-                #             plt.imshow(WSI_patch)
-                #             plt.show()
-                #             plt.imshow(GT_inst_map_patch)
-                #             plt.show()
+                            # plt.imshow(WSI_patch)
+                            # plt.show()
+                            # plt.imshow(GT_inst_map_patch)
+                            # plt.show()
+                            # plt.imshow(GT_type_map_patch)
+                            # plt.show()
                 # plt.imshow(WSI_roi)
                 # plt.show()
                 # plt.imshow(GT_inst_map)
