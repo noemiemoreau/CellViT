@@ -26,7 +26,7 @@ if __name__ == "__main__":
     # images_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold1/images/"
     # labels_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold1/labels/"
 
-    folder_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold2/"
+    folder_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold0/"
 
     WSIs_path = folder_path + "/WSIs/"
     GTs_geojson_path = folder_path + "/GTs_geojson/"
