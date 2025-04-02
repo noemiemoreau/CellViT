@@ -2,6 +2,7 @@ import os
 import random
 
 import matplotlib.pyplot as plt
+import pandas
 from skimage.draw import polygon
 import numpy as np
 from PIL import Image
@@ -19,16 +20,38 @@ TYPE_NUCLEI_DICT = {
 }
 
 if __name__ == "__main__":
-    WSIs_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold1/WSIs/"
-    GTs_geojson_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold1/GTs_geojson/"
-    ROIs_geojson_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold1/ROIs_geojson/"
-    images_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold1/images/"
-    labels_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold1/labels/"
+    # WSIs_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold1/WSIs/"
+    # GTs_geojson_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold1/GTs_geojson/"
+    # ROIs_geojson_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold1/ROIs_geojson/"
+    # images_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold1/images/"
+    # labels_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold1/labels/"
+
+    folder_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold2/"
+
+    WSIs_path = folder_path + "/WSIs/"
+    GTs_geojson_path = folder_path + "/GTs_geojson/"
+    ROIs_geojson_path = folder_path + "/ROIs_geojson/"
+    images_path = folder_path + "/images/"
+    labels_path = folder_path + "/labels/"
     TYPE_NUCLEI_DICT_inv = {TYPE_NUCLEI_DICT[k]: k for k in TYPE_NUCLEI_DICT.keys()}
     patch_size = (256, 256)
+    cells_count_json = {
+        "images": [],
+        "Opal_480": [],
+        "Opal_520": [],
+        "Opal_570": [],
+        "Opal_620": [],
+        "Opal_690": [],
+        "Outside": [],
+        "Unclassified": []
+    }
+    types_json = {
+        "img": [],
+        "type": []
+    }
     for image_name in os.listdir(WSIs_path):
         if not image_name.startswith("."):
-            image_name = image_name[:-8]
+            image_name = image_name[:-4]
             print(image_name)
 
             with open(GTs_geojson_path + image_name + ".geojson", 'r') as f:
@@ -38,7 +61,7 @@ if __name__ == "__main__":
             rois_list = gson_rois_gt["features"]
             cells_gt_list = gson_cells_gt["features"]
 
-            WSI_pil = Image.open(WSIs_path + image_name + "_PAS.png")
+            WSI_pil = Image.open(WSIs_path + image_name + ".png")
             WSI_array = np.array(WSI_pil)
 
             for roi in rois_list:
@@ -93,6 +116,24 @@ if __name__ == "__main__":
 
                             outdict = {"inst_map": GT_inst_map_patch, "type_map": GT_type_map_patch}
                             np.save(labels_path + image_name + "_" + str(roi_id) + "_" + str(path_number) + ".npy", outdict)
+
+                            types_json["img"].append(image_name + "_" + str(roi_id) + "_" + str(path_number) + ".png")
+                            types_json["type"].append("kidney")
+
+                            cells_count_json["images"].append(image_name + "_" + str(roi_id) + "_" + str(path_number) + ".png")
+                            cells_count_json["Opal_480"].append(0)
+                            cells_count_json["Opal_520"].append(0)
+                            cells_count_json["Opal_570"].append(0)
+                            cells_count_json["Opal_620"].append(0)
+                            cells_count_json["Opal_690"].append(0)
+                            cells_count_json["Outside"].append(0)
+                            cells_count_json["Unclassified"].append(0)
+
+                            for cell_inst in np.unique(GT_inst_map_patch):
+                                if cell_inst != 0:
+                                    cell_type = np.argmax(np.bincount(GT_type_map_patch[GT_inst_map_patch == cell_inst]))
+                                    cell_type = TYPE_NUCLEI_DICT[cell_type]
+                                    cells_count_json[cell_type][-1]=cells_count_json[cell_type][-1]+1
                             # plt.imshow(WSI_patch)
                             # plt.show()
                             # plt.imshow(GT_inst_map_patch)
@@ -106,3 +147,12 @@ if __name__ == "__main__":
                 # plt.imshow(GT_type_map)
                 # plt.show()
 
+    cell_count = pandas.DataFrame(cells_count_json,
+                                  columns=["images", "Opal_480", "Opal_520",
+                                           "Opal_570",
+                                           "Opal_620", "Opal_690", "Outside", "Unclassified"])
+    cell_count.to_csv(folder_path + "/cell_count.csv", ';')
+
+    types = pandas.DataFrame(types_json,
+                                  columns=["img", "type"])
+    types.to_csv(folder_path + "/types.csv", ';')
