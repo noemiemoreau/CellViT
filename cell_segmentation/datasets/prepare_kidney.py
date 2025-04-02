@@ -19,11 +19,11 @@ TYPE_NUCLEI_DICT = {
 }
 
 if __name__ == "__main__":
-    WSIs_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold2/WSIs/"
-    GTs_geojson_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold2/GTs_geojson/"
-    ROIs_geojson_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold2/ROIs_geojson/"
-    images_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold2/images/"
-    labels_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold2/labels/"
+    WSIs_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold0/WSIs/"
+    GTs_geojson_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold0/GTs_geojson/"
+    ROIs_geojson_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold0/ROIs_geojson/"
+    images_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold0/images/"
+    labels_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold0/labels/"
     TYPE_NUCLEI_DICT_inv = {TYPE_NUCLEI_DICT[k]: k for k in TYPE_NUCLEI_DICT.keys()}
     patch_size = (256, 256)
     for image_name in os.listdir(WSIs_path):
