@@ -14,7 +14,7 @@ logging:
 random_seed: 19
 gpu: 0
 data:
-  dataset: conic
+  dataset: PanNuke
   dataset_path: /scratch/nmoreau/CellVit_2025/kidney_data_256_40x/
   magnification: 40
   train_folds:
