@@ -26,7 +26,7 @@ if __name__ == "__main__":
     # images_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold1/images/"
     # labels_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold1/labels/"
 
-    folder_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold0/"
+    folder_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold2/"
 
     WSIs_path = folder_path + "/WSIs/"
     GTs_geojson_path = folder_path + "/GTs_geojson/"
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     }
     for image_name in os.listdir(WSIs_path):
         if not image_name.startswith("."):
-            image_name = image_name[:-4]
+            image_name = image_name[:-8]
             print(image_name)
 
             with open(GTs_geojson_path + image_name + ".geojson", 'r') as f:
@@ -61,7 +61,7 @@ if __name__ == "__main__":
             rois_list = gson_rois_gt["features"]
             cells_gt_list = gson_cells_gt["features"]
 
-            WSI_pil = Image.open(WSIs_path + image_name + ".png")
+            WSI_pil = Image.open(WSIs_path + image_name + "_PAS.png")
             WSI_array = np.array(WSI_pil)
 
             for roi in rois_list:
