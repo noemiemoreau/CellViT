@@ -26,7 +26,7 @@ if __name__ == "__main__":
     # images_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold1/images/"
     # labels_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold1/labels/"
 
-    folder_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold2/"
+    folder_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold0/"
 
     # folder_path = "/Users/nmoreau/Documents/Data/Kidney/new_organization/processed_data/cellvit/kidney_data_256_20x/fold2/"
 
