@@ -1029,7 +1029,7 @@ class InferenceCellViT:
         hv_cmap = plt.get_cmap("jet")
         binary_cmap = plt.get_cmap("jet")
         instance_map = plt.get_cmap("viridis")
-        cell_colors = ["#ffffff", "#ff0000", "#00ff00", "#1e00ff", "#feff00", "#ffbf00"]
+        cell_colors = ["#33fffc ", "#33ff64", "#ffff33", "#ffb833", "#ff33ff", "#0d070d", "#b032ef"]
 
         # invert the normalization of the sample images
         transform_settings = self.run_conf["transformations"]
