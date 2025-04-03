@@ -23,7 +23,7 @@ data:
   - 1
   test_folds:
   - 2
-  num_nuclei_classes: 8
+  num_nuclei_classes: 6
   num_tissue_classes: 1
 model:
   backbone: ViT256
@@ -55,7 +55,7 @@ loss:
       loss_fn: MCFocalTverskyLoss
       weight: 0.5
       args:
-        num_classes: 8
+        num_classes: 6
 
 training:
   drop_rate: 0
@@ -128,6 +128,4 @@ dataset_config:
     Opal_520: 2
     Opal_570: 3
     Opal_620: 4
-    Opal_690: 5
-    Outside: 6
-    Unclassified: 7
+    Unclassified: 5
