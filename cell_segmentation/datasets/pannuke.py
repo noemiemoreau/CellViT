@@ -91,6 +91,8 @@ class PanNukeDataset(CellDataset):
                         "Found image {fold_image}, but no corresponding annotation file!"
                     )
             fold_types = pd.read_csv(self.dataset / f"fold{fold}" / "types.csv")
+            print(fold_types.head())
+            print(fold_types.columns)
             fold_type_dict = fold_types.set_index("img")["type"].to_dict()
             self.types = {
                 **self.types,
