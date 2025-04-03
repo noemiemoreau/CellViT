@@ -685,16 +685,16 @@ class InferenceCellViT:
         ).to(
             self.device
         )  # shape: (batch_size, num_nuclei_classes, H, W)
-        predictions = DataclassHVStorage(
-            nuclei_binary_map=predictions["nuclei_binary_map"],
-            hv_map=predictions["hv_map"],
-            nuclei_type_map=predictions["nuclei_type_map"],
-            tissue_types=predictions["tissue_types"],
-            instance_map=predictions["instance_map"],
-            instance_types=predictions["instance_types"],
-            instance_types_nuclei=predictions["instance_types_nuclei"],
-            batch_size=predictions["tissue_types"].shape[0],
-        )
+        # predictions = DataclassHVStorage(
+        #     nuclei_binary_map=predictions["nuclei_binary_map"],
+        #     hv_map=predictions["hv_map"],
+        #     nuclei_type_map=predictions["nuclei_type_map"],
+        #     tissue_types=predictions["tissue_types"],
+        #     instance_map=predictions["instance_map"],
+        #     instance_types=predictions["instance_types"],
+        #     instance_types_nuclei=predictions["instance_types_nuclei"],
+        #     batch_size=predictions["tissue_types"].shape[0],
+        # )
 
         return predictions
 
@@ -742,7 +742,7 @@ class InferenceCellViT:
         gt["instance_types"] = calculate_instances(
             gt["nuclei_type_map"], gt["instance_map"]
         )
-        gt = DataclassHVStorage(**gt, batch_size=gt["tissue_types"].shape[0])
+        # gt = DataclassHVStorage(**gt, batch_size=gt["tissue_types"].shape[0])
         return gt
 
     def calculate_step_metric(
@@ -1001,8 +1001,8 @@ class InferenceCellViT:
         outdir = Path(outdir)
         outdir.mkdir(exist_ok=True, parents=True)
 
-        h = ground_truth.hv_map.shape[1]
-        w = ground_truth.hv_map.shape[2]
+        h = ground_truth["hv_map"].shape[1]
+        w = ground_truth["hv_map"].shape[2]
 
         # convert to rgb and crop to selection
         sample_images = (
