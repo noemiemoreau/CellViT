@@ -625,7 +625,6 @@ class InferenceCellViT:
         masks = batch[1]
         tissue_types = list(batch[2])
         image_names = list(batch[3])
-        print(masks.keys())
         model.zero_grad()
         if self.mixed_precision:
             with torch.autocast(device_type="cuda", dtype=torch.float16):
@@ -1002,8 +1001,8 @@ class InferenceCellViT:
         outdir = Path(outdir)
         outdir.mkdir(exist_ok=True, parents=True)
 
-        h = ground_truth["hv_map"].shape[1]
-        w = ground_truth["hv_map"].shape[2]
+        h = ground_truth.hv_map.shape[1]
+        w = ground_truth.hv_map.shape[2]
 
         # convert to rgb and crop to selection
         sample_images = (
