@@ -244,7 +244,7 @@ class PanNukeDataset(CellDataset):
         df_placeholder = []
         for fold in self.folds:
             csv_path = self.dataset / f"fold{fold}" / "cell_count.csv"
-            cell_count = pd.read_csv(csv_path, index_col=0)
+            cell_count = pd.read_csv(csv_path, index_col=0, sep=";")
             df_placeholder.append(cell_count)
         self.cell_count = pd.concat(df_placeholder)
         self.cell_count = self.cell_count.reindex(self.img_names)
