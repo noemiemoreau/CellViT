@@ -249,7 +249,7 @@ class InferenceCellViT:
         """
         # get model for inference
         checkpoint = torch.load(
-            self.run_dir / "checkpoints" / self.checkpoint_name, map_location="cpu"
+            self.run_dir / "checkpoints" / self.checkpoint_name, map_location="cpu", weights_only=False
         )
         model = self.get_model(model_type=checkpoint["arch"])
         self.logger.info(
