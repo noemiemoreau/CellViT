@@ -10,13 +10,13 @@ Image.MAX_IMAGE_PIXELS = None
 import json
 
 TYPE_NUCLEI_DICT = {
-    1: "Opal_480",
-    2: "Opal_520",
-    3: "Opal_570",
-    4: "Opal_620",
-    5: "Opal_690",
-    6: "Outside",
-    7: "Unclassified"
+    1: "Opal_480", #podocytes
+    2: "Opal_520", #PECs
+    3: "Opal_570", #endothelial
+    4: "Opal_620", #mesangial
+    5: "Opal_690", #immune
+    5: "Outside",
+    5: "Unclassified"
 }
 
 if __name__ == "__main__":
@@ -27,6 +27,8 @@ if __name__ == "__main__":
     # labels_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold1/labels/"
 
     folder_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold0/"
+
+    # folder_path = "/Users/nmoreau/Documents/Data/Kidney/new_organization/processed_data/cellvit/kidney_data_256_20x/fold2/"
 
     WSIs_path = folder_path + "/WSIs/"
     GTs_geojson_path = folder_path + "/GTs_geojson/"
@@ -41,9 +43,10 @@ if __name__ == "__main__":
         "Opal_520": [],
         "Opal_570": [],
         "Opal_620": [],
-        "Opal_690": [],
-        "Outside": [],
         "Unclassified": []
+        # "Opal_690": [],
+        # "Outside": [],
+        # "Unclassified": []
     }
     types_json = {
         "img": [],
@@ -86,7 +89,9 @@ if __name__ == "__main__":
                         if "classification" in properties.keys():
                             name = properties["classification"]["name"]
                         else:
-                            name = "Outside"
+                            name = "Unclassified"
+                        if name == "Opal_690":
+                            name = "Unclassified"
                         x1 = list_coord_cell[0][0]
                         y1 = list_coord_cell[0][1]
                         if xmin < x1 < xmax and ymin < y1 < ymax:
@@ -112,10 +117,7 @@ if __name__ == "__main__":
                         if GT_inst_map_patch.shape == patch_size and rand == 0:
                             # print(WSI_patch.shape)
                             WSI_patch_pil = Image.fromarray(WSI_patch)
-                            WSI_patch_pil.save(images_path + image_name + "_" + str(roi_id) + "_" + str(path_number) + ".png")
-
                             outdict = {"inst_map": GT_inst_map_patch, "type_map": GT_type_map_patch}
-                            np.save(labels_path + image_name + "_" + str(roi_id) + "_" + str(path_number) + ".npy", outdict)
 
                             types_json["img"].append(image_name + "_" + str(roi_id) + "_" + str(path_number) + ".png")
                             types_json["type"].append("kidney")
@@ -125,15 +127,27 @@ if __name__ == "__main__":
                             cells_count_json["Opal_520"].append(0)
                             cells_count_json["Opal_570"].append(0)
                             cells_count_json["Opal_620"].append(0)
-                            cells_count_json["Opal_690"].append(0)
-                            cells_count_json["Outside"].append(0)
                             cells_count_json["Unclassified"].append(0)
+                            # cells_count_json["Opal_690"].append(0)
+                            # cells_count_json["Outside"].append(0)
+                            # cells_count_json["Unclassified"].append(0)
 
                             for cell_inst in np.unique(GT_inst_map_patch):
                                 if cell_inst != 0:
                                     cell_type = np.argmax(np.bincount(GT_type_map_patch[GT_inst_map_patch == cell_inst]))
-                                    cell_type = TYPE_NUCLEI_DICT[cell_type]
-                                    cells_count_json[cell_type][-1]=cells_count_json[cell_type][-1]+1
+                                    if cell_type == 5:
+                                        cells_count_json["Unclassified"][-1] = cells_count_json["Unclassified"][-1] + 1
+                                    else:
+                                        cell_type = TYPE_NUCLEI_DICT[cell_type]
+                                        cells_count_json[cell_type][-1]=cells_count_json[cell_type][-1]+1
+                            nb_cell = np.unique(GT_inst_map_patch).shape[0]
+                            if cells_count_json["Unclassified"][-1] > nb_cell/2:
+                                pass
+                            else :
+                                WSI_patch_pil.save(
+                                    images_path + image_name + "_" + str(roi_id) + "_" + str(path_number) + ".png")
+                                np.save(labels_path + image_name + "_" + str(roi_id) + "_" + str(path_number) + ".npy",
+                                    outdict)
                             # plt.imshow(WSI_patch)
                             # plt.show()
                             # plt.imshow(GT_inst_map_patch)
@@ -150,7 +164,7 @@ if __name__ == "__main__":
     cell_count = pandas.DataFrame(cells_count_json,
                                   columns=["images", "Opal_480", "Opal_520",
                                            "Opal_570",
-                                           "Opal_620", "Opal_690", "Outside", "Unclassified"])
+                                           "Opal_620", "Unclassified"])
     cell_count.to_csv(folder_path + "/cell_count.csv", ';')
 
     types = pandas.DataFrame(types_json,
