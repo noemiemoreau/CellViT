@@ -625,7 +625,7 @@ class InferenceCellViT:
         masks = batch[1]
         tissue_types = list(batch[2])
         image_names = list(batch[3])
-
+        print(masks.keys())
         model.zero_grad()
         if self.mixed_precision:
             with torch.autocast(device_type="cuda", dtype=torch.float16):
