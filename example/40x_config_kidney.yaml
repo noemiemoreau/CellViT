@@ -77,7 +77,7 @@ training:
     weight_decay: 0.0001
   unfreeze_epoch: 25
   sampling_gamma: 0.85
-  sampling_strategy: ramdom
+  sampling_strategy: random
   mixed_precision: true
 transformations:
   randomrotate90:
