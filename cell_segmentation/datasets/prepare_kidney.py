@@ -141,8 +141,13 @@ if __name__ == "__main__":
                                         cell_type = TYPE_NUCLEI_DICT[cell_type]
                                         cells_count_json[cell_type][-1]=cells_count_json[cell_type][-1]+1
                             nb_cell = np.unique(GT_inst_map_patch).shape[0]
-                            if cells_count_json["Unclassified"][-1] > nb_cell/2:
-                                pass
+                            if cells_count_json["Unclassified"][-1] > nb_cell/4:
+                                cells_count_json["images"].pop()
+                                cells_count_json["Opal_480"].pop()
+                                cells_count_json["Opal_520"].pop()
+                                cells_count_json["Opal_570"].pop()
+                                cells_count_json["Opal_620"].pop()
+                                cells_count_json["Unclassified"].pop()
                             else :
                                 WSI_patch_pil.save(
                                     images_path + image_name + "_" + str(roi_id) + "_" + str(path_number) + ".png")
