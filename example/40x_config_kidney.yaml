@@ -62,9 +62,9 @@ training:
   attn_drop_rate: 0.1
   drop_path_rate: 0.1
   batch_size: 16
-  epochs: 130
+  epochs: 10
   optimizer: AdamW
-  early_stopping_patience: 130
+  early_stopping_patience: 10
   scheduler:
     scheduler_type: exponential
     hyperparameters:
