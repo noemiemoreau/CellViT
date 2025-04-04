@@ -15,7 +15,7 @@ random_seed: 19
 gpu: 0
 data:
   dataset: PanNuke
-  dataset_path: /scratch/nmoreau/CellViT_2025/kidney_data_256_40x/
+  dataset_path: /scratch/nmoreau/CellViT_2025/kidney_data_256_40x_no_filter/
   magnification: 40
   train_folds:
   - 0
