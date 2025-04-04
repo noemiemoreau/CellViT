@@ -26,7 +26,7 @@ if __name__ == "__main__":
     # images_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold1/images/"
     # labels_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold1/labels/"
 
-    folder_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x/fold1/"
+    folder_path = "/scratch/nmoreau/CellViT_2025/kidney_data_256_40x_no_filter/fold2/"
 
     # folder_path = "/Users/nmoreau/Documents/Data/Kidney/new_organization/processed_data/cellvit/kidney_data_256_20x/fold2/"
 
@@ -141,7 +141,8 @@ if __name__ == "__main__":
                                         cell_type = TYPE_NUCLEI_DICT[cell_type]
                                         cells_count_json[cell_type][-1]=cells_count_json[cell_type][-1]+1
                             nb_cell = np.unique(GT_inst_map_patch).shape[0]
-                            if cells_count_json["Unclassified"][-1] > nb_cell/4:
+                            if False:
+                            # if cells_count_json["Unclassified"][-1] > nb_cell/4:
                                 cells_count_json["images"].pop()
                                 cells_count_json["Opal_480"].pop()
                                 cells_count_json["Opal_520"].pop()
