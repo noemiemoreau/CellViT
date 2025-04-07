@@ -608,7 +608,7 @@ class ExperimentCellVitPanNuke(BaseExperiment):
                     f"Loading pretrained CellViT model from path: {pretrained_model}"
                 )
                 cellvit_pretrained = torch.load(pretrained_model, map_location="cpu")
-                self.logger.info(model.load_state_dict(cellvit_pretrained["model_state_dict"], strict=True))
+                self.logger.info(model.load_state_dict(cellvit_pretrained["model_state_dict"], strict=False))
             model.freeze_encoder()
             self.logger.info("Loaded CellVit256 model")
         if backbone_type.lower() in ["sam-b", "sam-l", "sam-h"]:
