@@ -24,7 +24,7 @@ data:
   test_folds:
   - 2
   num_nuclei_classes: 6
-  num_tissue_classes: 1
+  num_tissue_classes: 19
 model:
   backbone: ViT256
   pretrained: /scratch/nmoreau/CellViT_2025/checkpoints/CellViT-256-x40.pth
