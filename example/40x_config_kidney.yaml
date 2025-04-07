@@ -28,6 +28,7 @@ data:
 model:
   backbone: ViT256
   pretrained: /scratch/nmoreau/CellViT_2025/checkpoints/CellViT-256-x40.pth
+  pretrained_encoder: /scratch/nmoreau/CellViT_2025/checkpoints/vit256_small_dino.pth
   shared_skip_connections: true
 loss:
   nuclei_binary_map:
