@@ -15,7 +15,7 @@ random_seed: 19
 gpu: 0
 data:
   dataset: PanNuke
-  dataset_path: /scratch/nmoreau/CellViT_2025/kidney_data_256_40x_no_filter/
+  dataset_path: /scratch/nmoreau/CellViT_2025/kidney_data_256_40x_less_patch/
   magnification: 40
   train_folds:
   - 0
@@ -27,7 +27,7 @@ data:
   num_tissue_classes: 1
 model:
   backbone: ViT256
-  pretrained_encoder: /scratch/nmoreau/CellViT_2025/checkpoints/vit256_small_dino.pth
+  pretrained_encoder: /scratch/nmoreau/CellViT_2025/checkpoints/CellViT-256-x40.pth
   shared_skip_connections: true
 loss:
   nuclei_binary_map:
