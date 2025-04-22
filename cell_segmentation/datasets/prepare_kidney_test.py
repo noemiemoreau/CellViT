@@ -107,7 +107,7 @@ if __name__ == "__main__":
                             GT_type_map[cc, rr] = TYPE_NUCLEI_DICT_inv[name]
                 WSI_roi_pil = Image.fromarray(WSI_roi)
                 outdict = {"inst_map": GT_inst_map, "type_map": GT_type_map}
-                WSI_roi.save(
+                WSI_roi_pil.save(
                     images_path + image_name + "_" + str(roi_id) + ".png")
                 np.save(labels_path + image_name + "_" + str(roi_id) + ".npy",
                     outdict)
