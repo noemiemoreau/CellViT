@@ -136,7 +136,7 @@ class MoNuSegInference:
         """Load model and checkpoint and load the state_dict"""
         self.logger.info(f"Loading model: {self.model_path}")
 
-        model_checkpoint = torch.load(self.model_path, map_location="cpu")
+        model_checkpoint = torch.load(self.model_path, map_location="cpu", weights_only=False)
 
         # unpack checkpoint
         self.run_conf = unflatten_dict(model_checkpoint["config"], ".")
