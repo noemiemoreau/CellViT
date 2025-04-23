@@ -88,7 +88,6 @@ class KidneyDataset(Dataset):
             img = transformed["image"]
             mask = transformed["mask"]
 
-        tissue_type = self.types[img_path.name]
         inst_map = mask[:, :, 0].copy()
         type_map = mask[:, :, 1].copy()
         np_map = mask[:, :, 0].copy()
