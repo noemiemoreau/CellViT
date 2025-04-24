@@ -591,7 +591,7 @@ class PreProcessor(object):
         # load slide (OS and CuImage/OS)
         if self.config.wsi_extension == "png":
             slide = Image.open(str(wsi_file))
-            slide_cu = Image.open(str(wsi_file))
+            slide_cu = self.image_loader(str(wsi_file))
             slide.properties = {}
         else:
             slide = OpenSlide(str(wsi_file))
