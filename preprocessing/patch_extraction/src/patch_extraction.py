@@ -588,8 +588,13 @@ class PreProcessor(object):
         logger.info(f"Computing patches for {wsi_file.name}")
 
         # load slide (OS and CuImage/OS)
-        slide = OpenSlide(str(wsi_file))
-        slide_cu = self.image_loader(str(wsi_file))
+        if self.config.wsi_extension == "png":
+            slide = Image.open(str(wsi_file))
+            slide_cu = Image.open(str(wsi_file))
+            slide.properties = {}
+        else:
+            slide = OpenSlide(str(wsi_file))
+            slide_cu = self.image_loader(str(wsi_file))
         if "openslide.mpp-x" in slide.properties:
             slide_mpp = float(slide.properties.get("openslide.mpp-x"))
         elif (
