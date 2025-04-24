@@ -674,14 +674,14 @@ def generate_thumbnails_png(
     """
     # dict: str, PIL
     logger.debug(f"Save thumbnails of image at different scales: {sample_factors}")
-
+    width, height = slide.size
     thumbnails = {}
     # downsampling
     for sample_factor in sample_factors:
         thumbnail = slide.thumbnail(
             (
-                int(slide.properties["openslide.level[0].width"]) / sample_factor,
-                int(slide.properties["openslide.level[0].height"]) / sample_factor,
+                int(width) / sample_factor,
+                int(height) / sample_factor,
             )
         )
         thumbnails[f"downsample_{sample_factor}"] = thumbnail
@@ -691,8 +691,8 @@ def generate_thumbnails_png(
         sample_factor = round(mpp / slide_mpp)
         thumbnail = slide.thumbnail(
             (
-                int(slide.properties["openslide.level[0].width"]) / sample_factor,
-                int(slide.properties["openslide.level[0].height"]) / sample_factor,
+                int(width) / sample_factor,
+                int(height) / sample_factor,
             )
         )
         thumbnails[f"mpp_{mpp}"] = thumbnail
@@ -700,8 +700,8 @@ def generate_thumbnails_png(
     sample_factor = round(5 / slide_mpp)
     thumbnail = slide.thumbnail(
         (
-            int(slide.properties["openslide.level[0].width"]) / sample_factor,
-            int(slide.properties["openslide.level[0].height"]) / sample_factor,
+            int(width) / sample_factor,
+            int(height) / sample_factor,
         )
     )
     thumbnails["thumbnail"] = thumbnail
