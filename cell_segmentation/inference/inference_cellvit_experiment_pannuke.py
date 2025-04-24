@@ -997,8 +997,15 @@ class InferenceCellViT:
                 Each list entry is a list with 3 scores: Dice, Jaccard and bPQ for the image.
                 Defaults to None.
         """
-        outdir = Path(outdir)
-        outdir.mkdir(exist_ok=True, parents=True)
+        # outdir = Path(outdir)
+        # outdir.mkdir(exist_ok=True, parents=True)
+        outdir_npys = Path(outdir + "/npys/")
+        outdir_npys.mkdir(exist_ok=True, parents=True)
+        outdir_raws = Path(outdir + "/raws/")
+        outdir_raws.mkdir(exist_ok=True, parents=True)
+        outdir_visu = Path(outdir + "/visu/")
+        outdir_visu.mkdir(exist_ok=True, parents=True)
+
 
         h = ground_truth.hv_map.shape[2]
         w = ground_truth.hv_map.shape[3]
@@ -1126,7 +1133,7 @@ class InferenceCellViT:
                 add_patch(poly, c)
                 for poly, c in zip(gt_contours_polygon, gt_contour_colors_polygon)
             ]
-            gt_cell_image.save(outdir / f"raw_gt_{img_names[i]}")
+            gt_cell_image.save(outdir_raws / f"raw_gt_{img_names[i]}")
             placeholder[:h, 6 * w: 7 * w, :3] = np.asarray(gt_cell_image) / 255
             # pred
             pred_contours_polygon = [
@@ -1193,7 +1200,7 @@ class InferenceCellViT:
                 )
             fig.suptitle(f"Patch Predictions for {img_names[i]}")
             fig.tight_layout()
-            fig.savefig(outdir / f"pred_{img_names[i]}")
+            fig.savefig(outdir_visu / f"pred_{img_names[i]}")
             plt.close()
 
     # def plot_results(
