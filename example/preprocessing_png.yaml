@@ -1,7 +1,7 @@
 # dataset paths
 wsi_paths: /scratch/nmoreau/Test_data/images_tif/O_hNiere_S1_0a2cbd86-a4e4-4f73-85b1-5cd7aef18cc7.tif
 output_path: /scratch/nmoreau/Test_data/preprocessed/_cellvit/O_hNiere_S1_0a2cbd86-a4e4-4f73-85b1-5cd7aef18cc7/
-wsi_extension: png
+wsi_extension: tif
 wsi_properties: {slide_mpp: 0.2325 , magnification: 40}
 
 # basic setups
