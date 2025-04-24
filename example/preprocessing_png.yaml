@@ -1,0 +1,18 @@
+# dataset paths
+wsi_paths: /scratch/nmoreau/Test_data/images/O_hNiere_S1_0a2cbd86-a4e4-4f73-85b1-5cd7aef18cc7.png
+output_path: /scratch/nmoreau/Test_data/preprocessed/_cellvit/O_hNiere_S1_0a2cbd86-a4e4-4f73-85b1-5cd7aef18cc7/
+wsi_extension: png
+wsi_properties: {slide_mpp: 0.2325 , magnification: 40}
+
+# basic setups
+patch_size: 1024
+patch_overlap: 6.25
+target_mag: 40
+processes: 8
+overwrite: True
+
+# macenko stain normalization
+normalize_stains: True
+
+# finding patches
+min_intersection_ratio: 0.05
