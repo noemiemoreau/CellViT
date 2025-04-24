@@ -43,6 +43,7 @@ from preprocessing.patch_extraction.src.utils.patch_util import (
     calculate_background_ratio,
     compute_interesting_patches,
     generate_thumbnails,
+    generate_thumbnails_png,
     get_files_from_dir,
     get_intersected_labels,
     get_regions_json,
@@ -622,9 +623,14 @@ class PreProcessor(object):
         slide_properties = {"mpp": slide_mpp, "magnification": slide_mag}
         # Generate thumbnails
         logger.info("Generate thumbnails")
-        thumbnails = generate_thumbnails(
-            slide, slide_properties["mpp"], sample_factors=[128]# [32, 64, 128]
-        )  # todo
+        if self.config.wsi_extension == "png":
+            thumbnails = generate_thumbnails_png(
+                slide, slide_properties["mpp"], sample_factors=[128]# [32, 64, 128]
+            )  # todo
+        else:
+            thumbnails = generate_thumbnails(
+                slide, slide_properties["mpp"], sample_factors=[128]  # [32, 64, 128]
+            )  # todo
 
         # Check whether the resolution of the current image is the same as the given one
         self._check_wsi_resolution(slide.properties)

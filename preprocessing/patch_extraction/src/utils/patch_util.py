@@ -594,7 +594,6 @@ def compute_overlap(
     )
     return top, right, bottom, left
 
-
 def generate_thumbnails(
     slide: OpenSlide,
     slide_mpp: float,
@@ -652,6 +651,62 @@ def generate_thumbnails(
 
     return thumbnails
 
+def generate_thumbnails_png(
+    slide: Image,
+    slide_mpp: float,
+    sample_factors: List[int] = [32, 64, 128],
+    mpp_factors: List[float] = [5, 10],
+) -> dict:
+    """Generates a dictionary with thumbnails and corresponding thumbnail names
+
+    Args:
+        slide (OpenSlide): Slide to retrieve thumbnails from.
+        sample_factors (List[int], optional): Sample factors for downsampling of original size (highest level). Defaults to [32, 64, 128].
+        mpp_factors (List[float], optional): List of microns per pixels to retrieve. Defaults to [5, 10].
+
+    Returns:
+        dict[str, Image]: dictionary with thumbnails and corresponding thumbnail names.
+            Names are keys, PIL Images are values.
+
+    Todo:
+
+        * TODO: Error handling if mpp are not available
+    """
+    # dict: str, PIL
+    logger.debug(f"Save thumbnails of image at different scales: {sample_factors}")
+
+    thumbnails = {}
+    # downsampling
+    for sample_factor in sample_factors:
+        thumbnail = slide.thumbnail(
+            (
+                int(slide.properties["openslide.level[0].width"]) / sample_factor,
+                int(slide.properties["openslide.level[0].height"]) / sample_factor,
+            )
+        )
+        thumbnails[f"downsample_{sample_factor}"] = thumbnail
+    # slide_mpp = float(slide.properties["openslide.mpp-x"])
+    # matching microns per pixel
+    for mpp in mpp_factors:
+        sample_factor = round(mpp / slide_mpp)
+        thumbnail = slide.thumbnail(
+            (
+                int(slide.properties["openslide.level[0].width"]) / sample_factor,
+                int(slide.properties["openslide.level[0].height"]) / sample_factor,
+            )
+        )
+        thumbnails[f"mpp_{mpp}"] = thumbnail
+    # thumbnail with 5 mpp
+    sample_factor = round(5 / slide_mpp)
+    thumbnail = slide.thumbnail(
+        (
+            int(slide.properties["openslide.level[0].width"]) / sample_factor,
+            int(slide.properties["openslide.level[0].height"]) / sample_factor,
+        )
+    )
+    thumbnails["thumbnail"] = thumbnail
+
+    return thumbnails
 
 def chunks(lst: Union[List, Tuple], n: int) -> Generator:
     """Yield successive n-sized chunks from list.
