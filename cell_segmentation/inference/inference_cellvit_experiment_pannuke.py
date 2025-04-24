@@ -999,11 +999,11 @@ class InferenceCellViT:
         """
         outdir = Path(outdir)
         # outdir.mkdir(exist_ok=True, parents=True)
-        outdir_npys = outdir + "/npys/"
+        outdir_npys = outdir.joinpath( "/npys/")
         outdir_npys.mkdir(exist_ok=True, parents=True)
-        outdir_raws = outdir + "/raws/"
+        outdir_raws = outdir.joinpath("/raws/")
         outdir_raws.mkdir(exist_ok=True, parents=True)
-        outdir_visu = outdir + "/visu/"
+        outdir_visu = outdir.joinpath("/visu/")
         outdir_visu.mkdir(exist_ok=True, parents=True)
 
 
