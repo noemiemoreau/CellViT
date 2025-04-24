@@ -997,13 +997,13 @@ class InferenceCellViT:
                 Each list entry is a list with 3 scores: Dice, Jaccard and bPQ for the image.
                 Defaults to None.
         """
-        # outdir = Path(outdir)
+        outdir = Path(outdir)
         # outdir.mkdir(exist_ok=True, parents=True)
-        outdir_npys = Path(outdir + "/npys/")
+        outdir_npys = outdir + "/npys/"
         outdir_npys.mkdir(exist_ok=True, parents=True)
-        outdir_raws = Path(outdir + "/raws/")
+        outdir_raws = outdir + "/raws/"
         outdir_raws.mkdir(exist_ok=True, parents=True)
-        outdir_visu = Path(outdir + "/visu/")
+        outdir_visu = outdir + "/visu/"
         outdir_visu.mkdir(exist_ok=True, parents=True)
 
 
