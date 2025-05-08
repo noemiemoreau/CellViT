@@ -111,15 +111,15 @@ if __name__ == "__main__":
                 if WSI_roi.shape[0] < 1000:
                     diff_x = 1000 - WSI_roi.shape[0]
                     pad_x = diff_x // 2
-                    WSI_roi = np.pad(WSI_roi, (pad_x,...), mode='constant')
+                    WSI_roi = np.pad(WSI_roi, (pad_x, 0, 0), mode='constant')
                     GT_inst_map = np.pad(GT_inst_map, (pad_x, ), mode='minimum')
                     GT_type_map = np.pad(GT_type_map, (pad_x, ), mode='minimum')
                 if WSI_roi.shape[1] < 1000:
                     diff_y = 1000 - WSI_roi.shape[1]
                     pad_y = diff_y // 2
-                    WSI_roi = np.pad(WSI_roi, ((0, 0), (pad_y, pad_y), ), mode='constant')
-                    GT_inst_map = np.pad(GT_inst_map, ((0, 0), (pad_y, pad_y)), mode='minimum')
-                    GT_type_map = np.pad(GT_type_map, ((0, 0), (pad_y, pad_y)), mode='minimum')
+                    WSI_roi = np.pad(WSI_roi, (0, pad_y, 0), mode='constant')
+                    GT_inst_map = np.pad(GT_inst_map, (0, pad_y), mode='minimum')
+                    GT_type_map = np.pad(GT_type_map, (0, pad_y), mode='minimum')
                 if WSI_roi.shape[0] > 1000 :
                     diff_x = WSI_roi.shape[0] - 1000
                     start_x = diff_x//2
