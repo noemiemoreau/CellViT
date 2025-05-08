@@ -135,8 +135,8 @@ if __name__ == "__main__":
                 print(WSI_roi.shape)
                 print(GT_inst_map.shape)
                 print(GT_type_map.shape)
-                if WSI_roi.shape != GT_inst_map.shape:
-                    print("STOP!!!!!!!!!!!")
+                if WSI_roi.shape[0] != GT_inst_map.shape[0] and WSI_roi.shape[1] != GT_inst_map.shape[1]:
+                    raise "stop"
                 WSI_roi_pil = Image.fromarray(WSI_roi)
                 outdict = {"inst_map": GT_inst_map, "type_map": GT_type_map}
                 WSI_roi_pil.save(
