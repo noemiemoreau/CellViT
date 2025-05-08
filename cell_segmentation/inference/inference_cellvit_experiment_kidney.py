@@ -317,6 +317,7 @@ class MoNuSegInference:
             img = rearrange(img, "c i j w h -> (i j) c w h")
         mask = batch[1]
         image_name = list(batch[2])
+        print(image_name)
         mask["instance_types"] = calculate_instances(
             torch.unsqueeze(mask["nuclei_binary_map"], dim=0), mask["instance_map"]
         )
