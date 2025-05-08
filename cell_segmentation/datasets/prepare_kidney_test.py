@@ -105,38 +105,36 @@ if __name__ == "__main__":
                             rr, cc = polygon(poly[:, 0], poly[:, 1], (GT_inst_map.shape[1], GT_inst_map.shape[0]))
                             GT_inst_map[cc, rr] = i
                             GT_type_map[cc, rr] = TYPE_NUCLEI_DICT_inv[name]
-                print(WSI_roi.shape)
-                print(GT_inst_map.shape)
-                print(GT_type_map.shape)
-                if WSI_roi.shape[0] < 1000:
-                    diff_x = 1000 - WSI_roi.shape[0]
+                if WSI_roi.shape[0] < 1024:
+                    diff_x = 1024 - WSI_roi.shape[0]
                     pad_x = diff_x // 2
                     WSI_roi = np.pad(WSI_roi, ((pad_x, pad_x), (0,0), (0,0)), mode='constant')
                     GT_inst_map = np.pad(GT_inst_map, ((pad_x, pad_x), (0,0)), mode='minimum')
                     GT_type_map = np.pad(GT_type_map, ((pad_x, pad_x), (0,0)), mode='minimum')
-                if WSI_roi.shape[1] < 1000:
-                    diff_y = 1000 - WSI_roi.shape[1]
+                if WSI_roi.shape[1] < 1024:
+                    diff_y = 1024 - WSI_roi.shape[1]
                     pad_y = diff_y // 2
                     WSI_roi = np.pad(WSI_roi, ((0,0), (pad_y, pad_y), (0,0)), mode='constant')
                     GT_inst_map = np.pad(GT_inst_map, ((0,0), (pad_y, pad_y)), mode='minimum')
                     GT_type_map = np.pad(GT_type_map, ((0,0), (pad_y, pad_y)), mode='minimum')
-                if WSI_roi.shape[0] > 1000 :
-                    diff_x = WSI_roi.shape[0] - 1000
+                if WSI_roi.shape[0] > 1024 :
+                    diff_x = WSI_roi.shape[0] - 1024
                     start_x = diff_x//2
-                    WSI_roi = WSI_roi[start_x:start_x+1000, :, :]
-                    GT_inst_map = GT_inst_map[start_x:start_x+1000, :]
-                    GT_type_map = GT_type_map[start_x:start_x + 1000, :]
-                if WSI_roi.shape[1] > 1000:
-                    diff_y = WSI_roi.shape[1] - 1000
+                    WSI_roi = WSI_roi[start_x:start_x+1024, :, :]
+                    GT_inst_map = GT_inst_map[start_x:start_x+1024, :]
+                    GT_type_map = GT_type_map[start_x:start_x + 1024, :]
+                if WSI_roi.shape[1] > 1024:
+                    diff_y = WSI_roi.shape[1] - 1024
                     start_y = diff_y//2
-                    WSI_roi = WSI_roi[:, start_y:start_y+1000, :]
-                    GT_inst_map = GT_inst_map[:, start_y:start_y+1000]
-                    GT_type_map = GT_type_map[:, start_y:start_y + 1000]
+                    WSI_roi = WSI_roi[:, start_y:start_y+1024, :]
+                    GT_inst_map = GT_inst_map[:, start_y:start_y+1024]
+                    GT_type_map = GT_type_map[:, start_y:start_y + 1024]
+                if WSI_roi.shape[0] != GT_inst_map.shape[0] and WSI_roi.shape[1] != GT_inst_map.shape[1]:
+                    raise "stop"
+
                 print(WSI_roi.shape)
                 print(GT_inst_map.shape)
                 print(GT_type_map.shape)
-                if WSI_roi.shape[0] != GT_inst_map.shape[0] and WSI_roi.shape[1] != GT_inst_map.shape[1]:
-                    raise "stop"
                 WSI_roi_pil = Image.fromarray(WSI_roi)
                 outdict = {"inst_map": GT_inst_map, "type_map": GT_type_map}
                 WSI_roi_pil.save(
