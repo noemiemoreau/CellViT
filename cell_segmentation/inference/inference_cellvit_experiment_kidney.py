@@ -330,6 +330,8 @@ class MoNuSegInference:
         else:
             predictions_ = model.forward(img)
 
+        print(predictions_.keys())
+
         if self.overlap == 0:
             if self.patching:
                 predictions_ = self.post_process_patching(predictions_)
@@ -635,6 +637,7 @@ class MoNuSegInference:
                     i * decomposed_patch_num + j
                 ]
                 for cell in patch_instance_types.values():
+                    print(cell["type"])
                     if cell["type"] == 0:
                         continue
                     offset_global = np.array([x_global, y_global])
