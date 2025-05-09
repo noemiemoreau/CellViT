@@ -423,7 +423,7 @@ class MoNuSegInference:
                 predictions=predictions,
                 ground_truth=mask,
                 img_name=image_name[0],
-                outdir=self.outdir,
+                plot_dir=self.outdir,
                 scores=scores,
             )
 
@@ -1035,7 +1035,7 @@ class MoNuSegInference:
         predictions: dict,
         ground_truth: dict,
         img_name: str,
-        outdir: Path,
+        plot_dir: Path,
         scores: List[float],
     ) -> None:
         """Plot MoNuSeg results
@@ -1051,11 +1051,16 @@ class MoNuSegInference:
                 * instance_map: (1, 1024, 1024) or or (1, 512, 512)
                 * instance_types: List[dict], but just one entry in list
             img_name (str): Image name as string
-            outdir (Path): Output directory for storing
+            plot_dir (Path): Output directory for storing
             scores (List[float]): Scores as list [Dice, Jaccard, bPQ]
         """
-        outdir = Path(outdir) / "plots"
-        outdir.mkdir(exist_ok=True, parents=True)
+        plot_dir = Path(plot_dir) / "plots"
+        plot_dir.mkdir(exist_ok=True, parents=True)
+
+        save_dir = Path(plot_dir) / "results"
+        save_dir.mkdir(exist_ok=True, parents=True)
+
+
         predictions["nuclei_binary_map"] = predictions["nuclei_binary_map"].permute(
             0, 2, 3, 1
         )
@@ -1078,10 +1083,9 @@ class MoNuSegInference:
             predictions["nuclei_type_map"].detach().cpu().numpy()
         )
 
-        print(pred_sample_instance_maps.shape)
-        print(np.unique(pred_sample_instance_maps))
-        print(pred_sample_type_maps.shape)
-        print(np.unique(pred_sample_type_maps))
+        result_dict = {"inst_map": pred_sample_instance_maps, "type_map": pred_sample_type_maps}
+        np.save(save_dir + img_name + ".npy",
+                result_dict)
 
         gt_sample_binary_map = (
             ground_truth["nuclei_binary_map"].detach().cpu().numpy()[0]
@@ -1180,7 +1184,7 @@ class MoNuSegInference:
 
         # plotting
         test_image = Image.fromarray((placeholder * 255).astype(np.uint8))
-        test_image.save(outdir / f"raw_{img_name}")
+        test_image.save(plot_dir / f"raw_{img_name}")
         fig, axs = plt.subplots(figsize=(3, 2), dpi=1200)
         axs.imshow(placeholder)
         axs.set_xticks(np.arange(w / 2, 4 * w, w))
@@ -1216,7 +1220,7 @@ class MoNuSegInference:
             )
         fig.suptitle(f"Patch Predictions for {img_name}", fontsize=6)
         fig.tight_layout()
-        fig.savefig(outdir / f"pred_{img_name}")
+        fig.savefig(plot_dir / f"pred_{img_name}")
         plt.close()
 
 
