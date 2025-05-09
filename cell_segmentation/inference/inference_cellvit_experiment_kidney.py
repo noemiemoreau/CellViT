@@ -1084,7 +1084,7 @@ class MoNuSegInference:
         )
 
         result_dict = {"inst_map": pred_sample_instance_maps, "type_map": pred_sample_type_maps}
-        np.save(save_dir + img_name + ".npy",
+        np.save(save_dir + f"{img_name}" + ".npy",
                 result_dict)
 
         gt_sample_binary_map = (
