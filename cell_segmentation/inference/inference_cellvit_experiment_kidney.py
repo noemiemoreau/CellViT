@@ -1075,7 +1075,7 @@ class MoNuSegInference:
             predictions["instance_map"].detach().cpu().numpy()[0]
         )
         pred_sample_type_maps = (
-            predictions["nuclei_type_map"].detach().cpu().numpy()[0]
+            predictions["nuclei_type_map"].detach().cpu().numpy()
         )
 
         print(pred_sample_instance_maps.shape)
@@ -1270,9 +1270,8 @@ class InferenceCellViTMoNuSegParser:
         )
         parser.add_argument(
             "--plots",
-            type=bool,
-            help="Generate result plots. Default: False",
-            default=True,
+            action="store_true",
+            help="Generate inference plots in run_dir",
         )
 
         self.parser = parser
