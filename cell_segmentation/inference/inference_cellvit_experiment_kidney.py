@@ -423,7 +423,7 @@ class MoNuSegInference:
                 predictions=predictions,
                 ground_truth=mask,
                 img_name=image_name[0],
-                plot_dir=self.outdir,
+                outdir=self.outdir,
                 scores=scores,
             )
 
@@ -1051,7 +1051,7 @@ class MoNuSegInference:
                 * instance_map: (1, 1024, 1024) or or (1, 512, 512)
                 * instance_types: List[dict], but just one entry in list
             img_name (str): Image name as string
-            plot_dir (Path): Output directory for storing
+            outdir (Path): Output directory for storing
             scores (List[float]): Scores as list [Dice, Jaccard, bPQ]
         """
         plot_dir = Path(outdir) / "plots"
