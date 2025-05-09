@@ -1272,7 +1272,7 @@ class InferenceCellViTMoNuSegParser:
             "--plots",
             type=bool,
             help="Generate result plots. Default: False",
-            default=False,
+            default=True,
         )
 
         self.parser = parser
