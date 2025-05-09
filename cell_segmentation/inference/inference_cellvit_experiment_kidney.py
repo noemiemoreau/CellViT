@@ -297,6 +297,46 @@ class MoNuSegInference:
         self.logger.info(f"{20*'*'} Binary Dataset metrics {20*'*'}")
         [self.logger.info(f"{f'{k}:': <25} {v}") for k, v in dataset_metrics.items()]
 
+    def unpack_masks(
+        self, masks: dict, model: CellViT
+    ) -> dict:
+        # get ground truth values, perform one hot encoding for segmentation maps
+        gt_nuclei_binary_map_onehot = (
+            F.one_hot(masks["nuclei_binary_map"], num_classes=2)
+        ).type(
+            torch.float32
+        )  # background, nuclei
+        nuclei_type_maps = torch.squeeze(masks["nuclei_type_map"]).type(torch.int64)
+        gt_nuclei_type_maps_onehot = F.one_hot(
+            nuclei_type_maps, num_classes=self.num_classes
+        ).type(
+            torch.float32
+        )  # background + nuclei types
+
+        # assemble ground truth dictionary
+        gt = {
+            "nuclei_type_map": gt_nuclei_type_maps_onehot.permute(0, 3, 1, 2).to(
+                self.device
+            ),  # shape: (batch_size, H, W, num_nuclei_classes)
+            "nuclei_binary_map": gt_nuclei_binary_map_onehot.permute(0, 3, 1, 2).to(
+                self.device
+            ),  # shape: (batch_size, H, W, 2)
+            "hv_map": masks["hv_map"].to(self.device),  # shape: (batch_size, H, W, 2)
+            "instance_map": masks["instance_map"].to(
+                self.device
+            ),  # shape: (batch_size, H, W) -> each instance has one integer
+            "instance_types_nuclei": (
+                gt_nuclei_type_maps_onehot * masks["instance_map"][..., None]
+            )
+            .permute(0, 3, 1, 2)
+            .to(
+                self.device
+            )  # shape: (batch_size, num_nuclei_classes, H, W) -> instance has one integer, for each nuclei class
+        }
+        gt["instance_types"] = calculate_instances(
+            gt["nuclei_type_map"], gt["instance_map"]
+        )
+        return gt
     def inference_step(
         self, model: nn.Module, batch: object, generate_plots: bool = False
     ) -> dict:
@@ -345,10 +385,10 @@ class MoNuSegInference:
             image_metrics, predictions = self.calculate_step_metric_overlap(
                 cell_list=cell_list, gt=mask, image_name=image_name
             )
-
-            # _, _ = self.calculate_step_metric_overlap_noemie(
-            #     cell_list=cell_list, gt=mask, image_name=image_name
-            # )
+            gt_unpack = self.unpack_masks(masks=mask, model=model)
+            _, _ = self.calculate_step_metric_overlap_noemie(
+                cell_list=cell_list, gt=gt_unpack, image_name=image_name
+            )
 
         scores = [
             float(image_metrics["binary_dice_score"].detach().cpu()),
