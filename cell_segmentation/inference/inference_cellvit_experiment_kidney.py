@@ -1120,15 +1120,21 @@ class MoNuSegInference:
                 )
             )
         )
+        # placeholder[h : 2 * h, 2 * w : 3 * w, :3] = rgba2rgb(
+        #     instance_map(
+        #         (pred_sample_instance_maps - np.min(pred_sample_instance_maps))
+        #         / (
+        #             np.max(pred_sample_instance_maps)
+        #             - np.min(pred_sample_instance_maps + 1e-10)
+        #         )
+        #     )
+        # )
+
         placeholder[h : 2 * h, 2 * w : 3 * w, :3] = rgba2rgb(
-            instance_map(
-                (pred_sample_instance_maps - np.min(pred_sample_instance_maps))
-                / (
-                    np.max(pred_sample_instance_maps)
-                    - np.min(pred_sample_instance_maps + 1e-10)
-                )
+                binary_cmap(pred_sample_instance_maps / 6)
             )
-        )
+
+
         gt_contours_polygon = [
             v["contour"] for v in ground_truth["instance_types"][0].values()
         ]
