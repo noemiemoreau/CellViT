@@ -386,9 +386,9 @@ class MoNuSegInference:
                 cell_list=cell_list, gt=mask, image_name=image_name
             )
             # gt_unpack = self.unpack_masks(masks=mask, model=model)
-            _, _ = self.calculate_step_metric_overlap_noemie(
-                cell_list=cell_list, gt=mask, image_name=image_name
-            )
+            # _, _ = self.calculate_step_metric_overlap_noemie(
+            #     cell_list=cell_list, gt=mask, image_name=image_name
+            # )
 
         scores = [
             float(image_metrics["binary_dice_score"].detach().cpu()),
@@ -746,13 +746,17 @@ class MoNuSegInference:
         """
         predictions = {}
         h, w = gt["nuclei_binary_map"].shape[1:]
+
         instance_type_map = np.zeros((h, w), dtype=np.int32)
+        nuclei_type_map = np.zeros((h, w), dtype=np.int32)
 
         for instance, cell in enumerate(cell_list):
             contour = np.array(cell["contour"])[None, :, :]
             cv2.fillPoly(instance_type_map, contour, instance)
+            cv2.fillPoly(nuclei_type_map, contour, cell["type"])
 
         predictions["instance_map"] = torch.Tensor(instance_type_map)
+        predictions["nuclei_type_map"] = torch.Tensor(nuclei_type_map)
         instance_maps_gt = gt["instance_map"].detach().cpu()
 
         pred_arr = np.clip(instance_type_map, 0, 1)
@@ -1067,7 +1071,7 @@ class MoNuSegInference:
             predictions["nuclei_binary_map"][:, :, :, 1].detach().cpu().numpy()
         )[0]
         pred_sample_instance_maps = (
-            predictions["instance_map"].detach().cpu().numpy()[0]
+            predictions["nuclei_type_map"].detach().cpu().numpy()[0]
         )
 
         gt_sample_binary_map = (
@@ -1259,7 +1263,7 @@ class InferenceCellViTMoNuSegParser:
             "--plots",
             type=bool,
             help="Generate result plots. Default: False",
-            default=False,
+            default=True,
         )
 
         self.parser = parser
