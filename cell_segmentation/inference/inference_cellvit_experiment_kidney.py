@@ -346,9 +346,9 @@ class MoNuSegInference:
                 cell_list=cell_list, gt=mask, image_name=image_name
             )
 
-            _, _ = self.calculate_step_metric_overlap_noemie(
-                cell_list=cell_list, gt=mask, image_name=image_name
-            )
+            # _, _ = self.calculate_step_metric_overlap_noemie(
+            #     cell_list=cell_list, gt=mask, image_name=image_name
+            # )
 
         scores = [
             float(image_metrics["binary_dice_score"].detach().cpu()),
