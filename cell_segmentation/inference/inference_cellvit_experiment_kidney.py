@@ -385,10 +385,6 @@ class MoNuSegInference:
             image_metrics, predictions = self.calculate_step_metric_overlap(
                 cell_list=cell_list, gt=mask, image_name=image_name
             )
-            print(predictions["instance_map"].shape)
-            print(np.unique(predictions["instance_map"]))
-            print(predictions["nuclei_type_map"].shape)
-            print(np.unique(predictions["nuclei_type_map"]))
             # gt_unpack = self.unpack_masks(masks=mask, model=model)
             # _, _ = self.calculate_step_metric_overlap_noemie(
             #     cell_list=cell_list, gt=mask, image_name=image_name
@@ -839,7 +835,6 @@ class MoNuSegInference:
             torch.Tensor(predictions["nuclei_binary_map"]).type(torch.int64),
             num_classes=2,
         ).permute(2, 0, 1)[None, :, :, :]
-        print(image_metrics)
         return image_metrics, predictions
 
     def calculate_step_metric_overlap_noemie(
@@ -1068,6 +1063,8 @@ class MoNuSegInference:
         h = ground_truth["instance_map"].shape[1]
         w = ground_truth["instance_map"].shape[2]
 
+
+
         # process image and other maps
         sample_image = img.permute(0, 2, 3, 1).contiguous().cpu().numpy()
 
@@ -1077,6 +1074,14 @@ class MoNuSegInference:
         pred_sample_instance_maps = (
             predictions["instance_map"].detach().cpu().numpy()[0]
         )
+        pred_sample_type_maps = (
+            predictions["nuclei_type_map"].detach().cpu().numpy()[0]
+        )
+
+        print(pred_sample_instance_maps.shape)
+        print(np.unique(pred_sample_instance_maps))
+        print(pred_sample_type_maps.shape)
+        print(np.unique(pred_sample_type_maps))
 
         gt_sample_binary_map = (
             ground_truth["nuclei_binary_map"].detach().cpu().numpy()[0]
