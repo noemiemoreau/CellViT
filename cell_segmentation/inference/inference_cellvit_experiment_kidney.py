@@ -308,7 +308,7 @@ class MoNuSegInference:
         )  # background, nuclei
         nuclei_type_maps = torch.squeeze(masks["nuclei_type_map"]).type(torch.int64)
         gt_nuclei_type_maps_onehot = F.one_hot(
-            nuclei_type_maps, num_classes=self.num_classes
+            nuclei_type_maps, num_classes=6
         ).type(
             torch.float32
         )  # background + nuclei types
