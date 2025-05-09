@@ -831,7 +831,6 @@ class MoNuSegInference:
         predictions["nuclei_binary_map"] = pred_arr
 
         instance_maps_gt = gt["instance_map"].detach().cpu()
-        gt["tissue_types"] = gt["tissue_types"].detach().cpu().numpy().astype(np.uint8)
         gt["nuclei_binary_map"] = torch.argmax(gt["nuclei_binary_map"], dim=1).type(
             torch.uint8
         )
