@@ -678,7 +678,7 @@ class MoNuSegInference:
         return cell_list
 
     def calculate_step_metric_overlap(
-        self, cell_list: List[dict], gt: dict, image_name: List[str]
+            self, cell_list: List[dict], gt: dict, image_name: List[str]
     ) -> Tuple[dict, dict]:
         """Calculate step metric and return merged predictions for plotting
 
@@ -707,17 +707,13 @@ class MoNuSegInference:
         predictions = {}
         h, w = gt["nuclei_binary_map"].shape[1:]
         instance_type_map = np.zeros((h, w), dtype=np.int32)
-        nuclei_type_map = np.zeros((h, w), dtype=np.int32)
+
         for instance, cell in enumerate(cell_list):
             contour = np.array(cell["contour"])[None, :, :]
             cv2.fillPoly(instance_type_map, contour, instance)
-            cv2.fillPoly(nuclei_type_map, contour, cell["type"])
 
         predictions["instance_map"] = torch.Tensor(instance_type_map)
         instance_maps_gt = gt["instance_map"].detach().cpu()
-
-        predictions["nuclei_type_map"] = torch.Tensor(instance_type_map)
-        instance_maps_gt = gt["nuclei_type_map"].detach().cpu()
 
         pred_arr = np.clip(instance_type_map, 0, 1)
         target_binary_map = gt["nuclei_binary_map"].to(self.device).squeeze()
@@ -782,8 +778,6 @@ class MoNuSegInference:
             "rec_d": rec_d,
         }
 
-        print(image_metrics)
-
         # align to common shapes
         cleaned_instance_types = {
             k + 1: v for k, v in enumerate(predictions["instance_types"])
@@ -797,7 +791,7 @@ class MoNuSegInference:
             torch.Tensor(predictions["nuclei_binary_map"]).type(torch.int64),
             num_classes=2,
         ).permute(2, 0, 1)[None, :, :, :]
-
+        print(image_metrics)
         return image_metrics, predictions
 
     def calculate_step_metric_overlap_noemie(
