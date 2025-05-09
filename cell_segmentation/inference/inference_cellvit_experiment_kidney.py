@@ -1035,7 +1035,7 @@ class MoNuSegInference:
         predictions: dict,
         ground_truth: dict,
         img_name: str,
-        plot_dir: Path,
+        outdir: Path,
         scores: List[float],
     ) -> None:
         """Plot MoNuSeg results
@@ -1054,11 +1054,13 @@ class MoNuSegInference:
             plot_dir (Path): Output directory for storing
             scores (List[float]): Scores as list [Dice, Jaccard, bPQ]
         """
-        plot_dir = Path(plot_dir) / "plots"
+        plot_dir = Path(outdir) / "plots"
+        print(plot_dir)
         plot_dir.mkdir(exist_ok=True, parents=True)
 
-        save_dir = Path(plot_dir) / "results"
-        save_dir.mkdir(exist_ok=True, parents=True)
+        results_dir = Path(outdir) / "results"
+        print(results_dir)
+        results_dir.mkdir(exist_ok=True, parents=True)
 
 
         predictions["nuclei_binary_map"] = predictions["nuclei_binary_map"].permute(
@@ -1085,7 +1087,7 @@ class MoNuSegInference:
 
         result_dict = {"inst_map": pred_sample_instance_maps, "type_map": pred_sample_type_maps}
         print(img_name)
-        np.save(save_dir / f"{img_name}.npy",
+        np.save(results_dir / f"{img_name[-4]}.npy",
                 result_dict)
 
         gt_sample_binary_map = (
