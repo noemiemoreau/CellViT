@@ -385,9 +385,9 @@ class MoNuSegInference:
             image_metrics, predictions = self.calculate_step_metric_overlap(
                 cell_list=cell_list, gt=mask, image_name=image_name
             )
-            gt_unpack = self.unpack_masks(masks=mask, model=model)
+            # gt_unpack = self.unpack_masks(masks=mask, model=model)
             _, _ = self.calculate_step_metric_overlap_noemie(
-                cell_list=cell_list, gt=gt_unpack, image_name=image_name
+                cell_list=cell_list, gt=mask, image_name=image_name
             )
 
         scores = [
