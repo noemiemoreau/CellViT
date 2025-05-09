@@ -703,10 +703,12 @@ class MoNuSegInference:
         predictions = {}
         h, w = gt["nuclei_binary_map"].shape[1:]
         instance_type_map = np.zeros((h, w), dtype=np.int32)
-
+        nuclei_type_map = np.zeros((h, w), dtype=np.int32)
+        print(gt.keys())
         for instance, cell in enumerate(cell_list):
             contour = np.array(cell["contour"])[None, :, :]
             cv2.fillPoly(instance_type_map, contour, instance)
+            cv2.fillPoly(nuclei_type_map, contour, cell["type"])
 
         predictions["instance_map"] = torch.Tensor(instance_type_map)
         instance_maps_gt = gt["instance_map"].detach().cpu()
