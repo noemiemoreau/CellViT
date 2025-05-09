@@ -297,46 +297,6 @@ class MoNuSegInference:
         self.logger.info(f"{20*'*'} Binary Dataset metrics {20*'*'}")
         [self.logger.info(f"{f'{k}:': <25} {v}") for k, v in dataset_metrics.items()]
 
-    def unpack_masks(
-        self, masks: dict, model: CellViT
-    ) -> dict:
-        # get ground truth values, perform one hot encoding for segmentation maps
-        gt_nuclei_binary_map_onehot = (
-            F.one_hot(masks["nuclei_binary_map"], num_classes=2)
-        ).type(
-            torch.float32
-        )  # background, nuclei
-        nuclei_type_maps = torch.squeeze(masks["nuclei_type_map"]).type(torch.int64)
-        gt_nuclei_type_maps_onehot = F.one_hot(
-            nuclei_type_maps, num_classes=6
-        ).type(
-            torch.float32
-        )  # background + nuclei types
-
-        # assemble ground truth dictionary
-        gt = {
-            "nuclei_type_map": gt_nuclei_type_maps_onehot.permute(0, 3, 1, 2).to(
-                self.device
-            ),  # shape: (batch_size, H, W, num_nuclei_classes)
-            "nuclei_binary_map": gt_nuclei_binary_map_onehot.permute(0, 3, 1, 2).to(
-                self.device
-            ),  # shape: (batch_size, H, W, 2)
-            "hv_map": masks["hv_map"].to(self.device),  # shape: (batch_size, H, W, 2)
-            "instance_map": masks["instance_map"].to(
-                self.device
-            ),  # shape: (batch_size, H, W) -> each instance has one integer
-            "instance_types_nuclei": (
-                gt_nuclei_type_maps_onehot * masks["instance_map"][..., None]
-            )
-            .permute(0, 3, 1, 2)
-            .to(
-                self.device
-            )  # shape: (batch_size, num_nuclei_classes, H, W) -> instance has one integer, for each nuclei class
-        }
-        gt["instance_types"] = calculate_instances(
-            gt["nuclei_type_map"], gt["instance_map"]
-        )
-        return gt
     def inference_step(
         self, model: nn.Module, batch: object, generate_plots: bool = False
     ) -> dict:
@@ -385,10 +345,6 @@ class MoNuSegInference:
             image_metrics, predictions = self.calculate_step_metric_overlap(
                 cell_list=cell_list, gt=mask, image_name=image_name
             )
-            # gt_unpack = self.unpack_masks(masks=mask, model=model)
-            # _, _ = self.calculate_step_metric_overlap_noemie(
-            #     cell_list=cell_list, gt=mask, image_name=image_name
-            # )
 
         scores = [
             float(image_metrics["binary_dice_score"].detach().cpu()),
@@ -837,197 +793,6 @@ class MoNuSegInference:
         ).permute(2, 0, 1)[None, :, :, :]
         return image_metrics, predictions
 
-    def calculate_step_metric_overlap_noemie(
-        self, cell_list: List[dict], gt: dict, image_name: List[str]
-    ) -> Tuple[dict, dict]:
-        """Calculate the metrics for the validation step
-
-        Args:
-            predictions (DataclassHVStorage): Processed network output
-            gt (DataclassHVStorage): Ground truth values
-            image_names (list(str)): List with image names
-
-        Returns:
-            Tuple[dict, list]:
-                * dict: Dictionary with metrics. Structure not fixed yet
-                * list with cell_dice, cell_jaccard and pq for each image
-        """
-
-        predictions = {}
-        h, w = gt["nuclei_binary_map"].shape[1:]
-        instance_type_map = np.zeros((h, w), dtype=np.int32)
-        nuclei_type_map = np.zeros((h, w), dtype=np.int32)
-        for instance, cell in enumerate(cell_list):
-            contour = np.array(cell["contour"])[None, :, :]
-            cv2.fillPoly(instance_type_map, contour, instance)
-            cv2.fillPoly(nuclei_type_map, contour, cell["type"])
-
-        predictions["instance_map"] = torch.Tensor(instance_type_map)
-        predictions["nuclei_type_map"] = torch.Tensor(nuclei_type_map)
-        pred_arr = np.clip(instance_type_map, 0, 1)
-        predictions["nuclei_binary_map"] = pred_arr
-
-        instance_maps_gt = gt["instance_map"].detach().cpu()
-        gt["nuclei_binary_map"] = torch.argmax(gt["nuclei_binary_map"], dim=1).type(
-            torch.uint8
-        )
-        gt["instance_types_nuclei"] = (
-            gt["instance_types_nuclei"].detach().cpu().numpy().astype("int32")
-        )
-
-        # segmentation scores
-        binary_dice_scores = []  # binary dice scores per image
-        binary_jaccard_scores = []  # binary jaccard scores per image
-        pq_scores = []  # pq-scores per image
-        dq_scores = []  # dq-scores per image
-        sq_scores = []  # sq_scores per image
-        cell_type_pq_scores = []  # pq-scores per cell type and image
-        cell_type_dq_scores = []  # dq-scores per cell type and image
-        cell_type_sq_scores = []  # sq-scores per cell type and image
-        scores = []  # all scores in one list
-
-        # detection scores
-        paired_all = []  # unique matched index pair
-        unpaired_true_all = (
-            []
-        )  # the index must exist in `true_inst_type_all` and unique
-        unpaired_pred_all = (
-            []
-        )  # the index must exist in `pred_inst_type_all` and unique
-        true_inst_type_all = []  # each index is 1 independent data point
-        pred_inst_type_all = []  # each index is 1 independent data point
-
-        # for detections scores
-        true_idx_offset = 0
-        pred_idx_offset = 0
-
-        target_binary_map = gt["nuclei_binary_map"].to(self.device).squeeze()
-
-        cell_dice = (
-            dice(
-                preds=torch.Tensor(pred_arr).to(self.device),
-                target=target_binary_map,
-                ignore_index=0,
-            )
-            .detach()
-            .cpu()
-        )
-        cell_jaccard = (
-            binary_jaccard_index(
-                preds=torch.Tensor(pred_arr).to(self.device),
-                target=target_binary_map,
-            )
-            .detach()
-            .cpu()
-        )
-        remapped_instance_pred = remap_label(predictions["instance_map"])[None, :, :]
-        remapped_gt = remap_label(instance_maps_gt)
-        [dq, sq, pq], _ = get_fast_pq(true=remapped_gt, pred=remapped_instance_pred)
-
-
-        # pq values per class (with class 0 beeing background -> should be skipped in the future)
-        nuclei_type_pq = []
-        nuclei_type_dq = []
-        nuclei_type_sq = []
-        for j in range(0, 6):
-            pred_nuclei_instance_class = remap_label(
-                predictions["instance_types_nuclei"][j, ...]
-            )
-            target_nuclei_instance_class = remap_label(
-                gt["instance_types_nuclei"][j, ...]
-            )
-
-            # if ground truth is empty, skip from calculation
-            if len(np.unique(target_nuclei_instance_class)) == 1:
-                pq_tmp = np.nan
-                dq_tmp = np.nan
-                sq_tmp = np.nan
-            else:
-                [dq_tmp, sq_tmp, pq_tmp], _ = get_fast_pq(
-                    pred_nuclei_instance_class,
-                    target_nuclei_instance_class,
-                    match_iou=0.5,
-                )
-            nuclei_type_pq.append(pq_tmp)
-            nuclei_type_dq.append(dq_tmp)
-            nuclei_type_sq.append(sq_tmp)
-
-        # detection scores
-        true_centroids = np.array(
-            [v["centroid"] for k, v in gt["instance_types"].items()]
-        )
-        true_instance_type = np.array(
-            [v["type"] for k, v in gt["instance_types"].items()]
-        )
-        pred_centroids = np.array(
-            [v["centroid"] for k, v in predictions["instance_types"].items()]
-        )
-        pred_instance_type = np.array(
-            [v["type"] for k, v in predictions["instance_types"].items()]
-        )
-
-        if true_centroids.shape[0] == 0:
-            true_centroids = np.array([[0, 0]])
-            true_instance_type = np.array([0])
-        if pred_centroids.shape[0] == 0:
-            pred_centroids = np.array([[0, 0]])
-            pred_instance_type = np.array([0])
-        if self.magnification == 40:
-            pairing_radius = 12
-        else:
-            pairing_radius = 6
-        paired, unpaired_true, unpaired_pred = pair_coordinates(
-            true_centroids, pred_centroids, pairing_radius
-        )
-        true_idx_offset = (
-            true_idx_offset + true_inst_type_all[-1].shape[0] if i != 0 else 0
-        )
-        pred_idx_offset = (
-            pred_idx_offset + pred_inst_type_all[-1].shape[0] if i != 0 else 0
-        )
-        true_inst_type_all.append(true_instance_type)
-        pred_inst_type_all.append(pred_instance_type)
-
-        # increment the pairing index statistic
-        if paired.shape[0] != 0:  # ! sanity
-            paired[:, 0] += true_idx_offset
-            paired[:, 1] += pred_idx_offset
-            paired_all.append(paired)
-
-        unpaired_true += true_idx_offset
-        unpaired_pred += pred_idx_offset
-        unpaired_true_all.append(unpaired_true)
-        unpaired_pred_all.append(unpaired_pred)
-
-        cell_type_pq_scores.append(nuclei_type_pq)
-        cell_type_dq_scores.append(nuclei_type_dq)
-        cell_type_sq_scores.append(nuclei_type_sq)
-
-        paired_all = np.concatenate(paired_all, axis=0)
-        unpaired_true_all = np.concatenate(unpaired_true_all, axis=0)
-        unpaired_pred_all = np.concatenate(unpaired_pred_all, axis=0)
-        true_inst_type_all = np.concatenate(true_inst_type_all, axis=0)
-        pred_inst_type_all = np.concatenate(pred_inst_type_all, axis=0)
-
-        image_metrics = {
-            "image_names": image_name,
-            "binary_dice_score": cell_dice,
-            "binary_jaccard_score": cell_jaccard,
-            "pq_score": pq,
-            "dq_score": dq,
-            "sq_score": sq,
-            "cell_type_pq_scores": cell_type_pq_scores,
-            "cell_type_dq_scores": cell_type_dq_scores,
-            "cell_type_sq_scores": cell_type_sq_scores,
-            "paired_all": paired_all,
-            "unpaired_true_all": unpaired_true_all,
-            "unpaired_pred_all": unpaired_pred_all,
-            "true_inst_type_all": true_inst_type_all,
-            "pred_inst_type_all": pred_inst_type_all,
-        }
-        print(image_metrics)
-
-        return image_metrics, predictions
 
     def plot_results(
         self,
@@ -1055,11 +820,9 @@ class MoNuSegInference:
             scores (List[float]): Scores as list [Dice, Jaccard, bPQ]
         """
         plot_dir = Path(outdir) / "plots"
-        print(plot_dir)
         plot_dir.mkdir(exist_ok=True, parents=True)
 
         results_dir = Path(outdir) / "results"
-        print(results_dir)
         results_dir.mkdir(exist_ok=True, parents=True)
 
 
@@ -1069,8 +832,6 @@ class MoNuSegInference:
 
         h = ground_truth["instance_map"].shape[1]
         w = ground_truth["instance_map"].shape[2]
-
-
 
         # process image and other maps
         sample_image = img.permute(0, 2, 3, 1).contiguous().cpu().numpy()
@@ -1085,8 +846,8 @@ class MoNuSegInference:
             predictions["nuclei_type_map"].detach().cpu().numpy()
         )
 
+        #save results for eval
         result_dict = {"inst_map": pred_sample_instance_maps, "type_map": pred_sample_type_maps}
-        print(img_name)
         np.save(results_dir / f"{img_name[:-4]}.npy",
                 result_dict)
 
