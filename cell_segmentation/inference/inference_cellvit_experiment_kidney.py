@@ -385,6 +385,10 @@ class MoNuSegInference:
             image_metrics, predictions = self.calculate_step_metric_overlap(
                 cell_list=cell_list, gt=mask, image_name=image_name
             )
+            print(predictions["instance_map"].shape)
+            print(np.unique(predictions["instance_map"]))
+            print(predictions["nuclei_type_map"].shape)
+            print(np.unique(predictions["nuclei_type_map"]))
             # gt_unpack = self.unpack_masks(masks=mask, model=model)
             # _, _ = self.calculate_step_metric_overlap_noemie(
             #     cell_list=cell_list, gt=mask, image_name=image_name
@@ -1071,7 +1075,7 @@ class MoNuSegInference:
             predictions["nuclei_binary_map"][:, :, :, 1].detach().cpu().numpy()
         )[0]
         pred_sample_instance_maps = (
-            predictions["nuclei_type_map"].detach().cpu().numpy()[0]
+            predictions["instance_map"].detach().cpu().numpy()[0]
         )
 
         gt_sample_binary_map = (
@@ -1120,21 +1124,15 @@ class MoNuSegInference:
                 )
             )
         )
-        # placeholder[h : 2 * h, 2 * w : 3 * w, :3] = rgba2rgb(
-        #     instance_map(
-        #         (pred_sample_instance_maps - np.min(pred_sample_instance_maps))
-        #         / (
-        #             np.max(pred_sample_instance_maps)
-        #             - np.min(pred_sample_instance_maps + 1e-10)
-        #         )
-        #     )
-        # )
-
         placeholder[h : 2 * h, 2 * w : 3 * w, :3] = rgba2rgb(
-                binary_cmap(pred_sample_instance_maps / 6)
+            instance_map(
+                (pred_sample_instance_maps - np.min(pred_sample_instance_maps))
+                / (
+                    np.max(pred_sample_instance_maps)
+                    - np.min(pred_sample_instance_maps + 1e-10)
+                )
             )
-
-
+        )
         gt_contours_polygon = [
             v["contour"] for v in ground_truth["instance_types"][0].values()
         ]
@@ -1269,7 +1267,7 @@ class InferenceCellViTMoNuSegParser:
             "--plots",
             type=bool,
             help="Generate result plots. Default: False",
-            default=True,
+            default=False,
         )
 
         self.parser = parser
