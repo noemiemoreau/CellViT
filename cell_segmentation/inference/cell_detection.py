@@ -666,8 +666,9 @@ class CellPostProcessor:
         )  # cells torching the border without having an overlap from other patches
 
         for idx, cell_info in edge_cells.iterrows():
-            print(cell_info)
             edge_information = dict(cell_info["edge_information"])
+            if edge_information["edge_patches"] is None:
+                continue
             edge_patch = edge_information["edge_patches"][0]
             edge_patch = f"{edge_patch[0]}_{edge_patch[1]}"
             if edge_patch not in existing_patches:
