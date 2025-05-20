@@ -356,6 +356,8 @@ class MoNuSegInference:
                 image_metrics, predictions = self.calculate_step_metric_overlap(
                     cell_list=cell_list, gt=mask, image_name=image_name
                 )
+            else:
+                predictions = self.get_prediction_overlap(cell_list=cell_list, image_name=image_name)
         if self.eval:
             scores = [
                 float(image_metrics["binary_dice_score"].detach().cpu()),
@@ -822,6 +824,68 @@ class MoNuSegInference:
             num_classes=2,
         ).permute(2, 0, 1)[None, :, :, :]
         return image_metrics, predictions
+
+
+    def get_prediction_overlap(
+            self, cell_list: List[dict], image_name: List[str]
+    ) -> Tuple[dict, dict]:
+        """Calculate step metric and return merged predictions for plotting
+
+        Args:
+            cell_list (List[dict]): List with cell dicts
+            gt (dict): Ground-Truth dictionary
+            image_name (List[str]): Image Name as list with just one entry
+
+        Returns:
+            Tuple[dict, dict]:
+                dict: Image metrics for one MoNuSeg image. Keys are:
+                * image_name
+                * binary_dice_score
+                * binary_jaccard_score
+                * pq_score
+                * dq_score
+                * sq_score
+                * f1_d
+                * prec_d
+                * rec_d
+                dict: Predictions, reshaped for one image and for plotting
+                * nuclei_binary_map: Shape (1, 2, 1024, 1024) or (1, 2, 1024, 1024)
+                * instance_map: Shape (1, 1024, 1024) or or (1, 2, 512, 512)
+                * instance_types: Dict for each nuclei
+        """
+        predictions = {}
+        h, w = 1024,1024
+
+        instance_type_map = np.zeros((h, w), dtype=np.int32)
+        nuclei_type_map = np.zeros((h, w), dtype=np.int32)
+
+        for instance, cell in enumerate(cell_list):
+            contour = np.array(cell["contour"])[None, :, :]
+            cv2.fillPoly(instance_type_map, contour, instance)
+            cv2.fillPoly(nuclei_type_map, contour, cell["type"])
+
+        predictions["instance_map"] = torch.Tensor(instance_type_map)
+        predictions["nuclei_type_map"] = torch.Tensor(nuclei_type_map)
+
+
+        pred_arr = np.clip(instance_type_map, 0, 1)
+        predictions["nuclei_binary_map"] = pred_arr
+        predictions["instance_types"] = cell_list
+
+        # align to common shapes
+        cleaned_instance_types = {
+            k + 1: v for k, v in enumerate(predictions["instance_types"])
+        }
+        for cell, results in cleaned_instance_types.items():
+            results["contour"] = np.array(results["contour"])
+            cleaned_instance_types[cell] = results
+        predictions["instance_types"] = cleaned_instance_types
+        predictions["instance_map"] = predictions["instance_map"][None, :, :]
+        predictions["nuclei_binary_map"] = F.one_hot(
+            torch.Tensor(predictions["nuclei_binary_map"]).type(torch.int64),
+            num_classes=2,
+        ).permute(2, 0, 1)[None, :, :, :]
+        return predictions
 
 
     def plot_results(
