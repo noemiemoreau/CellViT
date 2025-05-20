@@ -262,7 +262,7 @@ class MoNuSegInference:
             enumerate(self.inference_dataloader), total=len(self.inference_dataloader)
         )
 
-        print("eval? "+self.eval)
+        print("eval? "+ str(self.eval))
 
         with torch.no_grad():
             for image_idx, batch in inference_loop:
