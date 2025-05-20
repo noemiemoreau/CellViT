@@ -142,7 +142,7 @@ class KidneyDataset(Dataset):
                     2, 256, 256 - self.overlap
                 )
 
-            return img, None, Path(img_path).name
+            return img, {}, Path(img_path).name
 
 
 
