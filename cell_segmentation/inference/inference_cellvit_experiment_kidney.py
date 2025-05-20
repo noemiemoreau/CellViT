@@ -1050,8 +1050,8 @@ class MoNuSegInference:
         results_dir = Path(outdir) / "results"
         results_dir.mkdir(exist_ok=True, parents=True)
 
-        h = ground_truth["instance_map"].shape[1]
-        w = ground_truth["instance_map"].shape[2]
+        h = img.shape[2]
+        w = img.shape[3]
 
 
         predictions["nuclei_binary_map"] = predictions["nuclei_binary_map"].permute(
@@ -1100,23 +1100,11 @@ class MoNuSegInference:
         placeholder[:h, :w, :3] = sample_image
         placeholder[h : 2 * h, :w, :3] = sample_image
         # binary prediction
-        placeholder[:h, w : 2 * w, :3] = rgba2rgb(
-            binary_cmap(gt_sample_binary_map * 255)
-        )
         placeholder[h : 2 * h, w : 2 * w, :3] = rgba2rgb(
             binary_cmap(pred_sample_binary_map * 255)
         )
 
         # instance_predictions
-        placeholder[:h, 2 * w : 3 * w, :3] = rgba2rgb(
-            instance_map(
-                (gt_sample_instance_map - np.min(gt_sample_instance_map))
-                / (
-                    np.max(gt_sample_instance_map)
-                    - np.min(gt_sample_instance_map + 1e-10)
-                )
-            )
-        )
         placeholder[h : 2 * h, 2 * w : 3 * w, :3] = rgba2rgb(
             instance_map(
                 (pred_sample_instance_maps - np.min(pred_sample_instance_maps))
@@ -1126,23 +1114,7 @@ class MoNuSegInference:
                 )
             )
         )
-        gt_contours_polygon = [
-            v["contour"] for v in ground_truth["instance_types"][0].values()
-        ]
-        gt_contours_polygon = [
-            list(zip(poly[:, 0], poly[:, 1])) for poly in gt_contours_polygon
-        ]
-        gt_contour_colors_polygon = ["#70c6ff" for i in range(len(gt_contours_polygon))]
-        gt_cell_image = Image.fromarray((sample_image * 255).astype(np.uint8)).convert(
-            "RGB"
-        )
-        gt_drawing = ImageDraw.Draw(gt_cell_image)
-        add_patch = lambda poly, color: gt_drawing.polygon(poly, outline=color, width=2)
-        [
-            add_patch(poly, c)
-            for poly, c in zip(gt_contours_polygon, gt_contour_colors_polygon)
-        ]
-        placeholder[:h, 3 * w : 4 * w, :3] = np.asarray(gt_cell_image) / 255
+
         # pred
         pred_contours_polygon = [
             v["contour"] for v in predictions["instance_types"].values()
