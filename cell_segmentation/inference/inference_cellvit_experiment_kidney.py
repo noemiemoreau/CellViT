@@ -349,6 +349,8 @@ class MoNuSegInference:
                 image_metrics = self.calculate_step_metric(
                     predictions=predictions, gt=mask, image_name=image_name
                 )
+            else:
+                image_metrics = None
 
         elif self.patching and self.overlap != 0:
             cell_list = self.post_process_patching_overlap(
@@ -359,6 +361,7 @@ class MoNuSegInference:
                     cell_list=cell_list, gt=mask, image_name=image_name
                 )
             else:
+                image_metrics = None
                 predictions = self.get_prediction_overlap(cell_list=cell_list, image_name=image_name)
         if self.eval:
             scores = [
