@@ -399,7 +399,7 @@ class MoNuSegInference:
             )
 
         elif generate_plots and not self.eval:
-            print(img_full.shape)
+            print(img_full.keys())
             if self.overlap == 0 and self.patching:
                 batch_size = img.shape[0]
                 num_elems = int(np.sqrt(batch_size))
