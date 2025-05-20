@@ -863,7 +863,7 @@ class MoNuSegInference:
         h = ground_truth["instance_map"].shape[1]
         w = ground_truth["instance_map"].shape[2]
 
-        print("shape: " + ground_truth["instance_map"].shape)
+        print("shape: " + str(ground_truth["instance_map"].shape))
 
         # process image and other maps
         sample_image = img.permute(0, 2, 3, 1).contiguous().cpu().numpy()
