@@ -330,6 +330,8 @@ class MoNuSegInference:
             mask["instance_types"] = calculate_instances(
                 torch.unsqueeze(mask["nuclei_binary_map"], dim=0), mask["instance_map"]
             )
+        else:
+            img_full = batch[1]
 
         model.zero_grad()
 
@@ -397,6 +399,7 @@ class MoNuSegInference:
             )
 
         elif generate_plots and not self.eval:
+            print(img_full.shape)
             if self.overlap == 0 and self.patching:
                 batch_size = img.shape[0]
                 num_elems = int(np.sqrt(batch_size))
@@ -406,10 +409,22 @@ class MoNuSegInference:
                 )
                 img = torch.unsqueeze(img, dim=0)
                 img = torch.permute(img, (0, 3, 1, 2))
+            elif self.overlap != 0 and self.patching:
+                h, w = 1024, 1024
+                total_img = torch.zeros((3, h, w))
+                decomposed_patch_num = int(np.sqrt(img.shape[0]))
+                for i in range(decomposed_patch_num):
+                    for j in range(decomposed_patch_num):
+                        x_global = i * 256 - i * self.overlap
+                        y_global = j * 256 - j * self.overlap
+                        total_img[
+                        :, x_global: x_global + 256, y_global: y_global + 256
+                        ] = img[i * decomposed_patch_num + j]
+                img = total_img
+                img = img[None, :, :, :]
             self.plot_results_no_eval(
                 img=img,
                 predictions=predictions,
-                ground_truth=mask,
                 img_name=image_name[0],
                 outdir=self.outdir,
                 scores=scores,
