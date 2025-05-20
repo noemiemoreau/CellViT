@@ -427,7 +427,6 @@ class MoNuSegInference:
                 predictions=predictions,
                 img_name=image_name[0],
                 outdir=self.outdir,
-                scores=scores,
             )
 
         return image_metrics
@@ -1105,7 +1104,6 @@ class MoNuSegInference:
         predictions: dict,
         img_name: str,
         outdir: Path,
-        scores: List[float],
     ) -> None:
         """Plot MoNuSeg results
 
@@ -1245,14 +1243,6 @@ class MoNuSegInference:
         for y_seg in grid_y:
             axs.axhline(y_seg, color="black")
 
-        if scores is not None:
-            axs.text(
-                20,
-                1.85 * h,
-                f"Dice: {str(np.round(scores[0], 2))}\nJac.: {str(np.round(scores[1], 2))}\nbPQ: {str(np.round(scores[2], 2))}",
-                bbox={"facecolor": "white", "pad": 2, "alpha": 0.5},
-                fontsize=4,
-            )
         fig.suptitle(f"Patch Predictions for {img_name}", fontsize=6)
         fig.tight_layout()
         fig.savefig(plot_dir / f"pred_{img_name}")
