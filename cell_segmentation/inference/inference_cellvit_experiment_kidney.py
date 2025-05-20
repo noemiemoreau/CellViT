@@ -77,6 +77,7 @@ class MoNuSegInference:
         patching: bool = False,
         overlap: int = 0,
         magnification: int = 40,
+        eval: bool = False
     ) -> None:
         """Cell Segmentation Inference class for MoNuSeg dataset
 
@@ -97,6 +98,7 @@ class MoNuSegInference:
         self.magnification = magnification
         self.overlap = overlap
         self.patching = patching
+        self.eval = eval
         if overlap > 0:
             assert patching, "Patching must be activated"
 
@@ -109,6 +111,7 @@ class MoNuSegInference:
             transforms=self.inference_transforms,
             patching=patching,
             overlap=overlap,
+            eval=eval
         )
         self.inference_dataloader = DataLoader(
             self.inference_dataset,
@@ -259,43 +262,47 @@ class MoNuSegInference:
             enumerate(self.inference_dataloader), total=len(self.inference_dataloader)
         )
 
+        print("eval? "+self.eval)
+
         with torch.no_grad():
             for image_idx, batch in inference_loop:
                 image_metrics = self.inference_step(
                     model=self.model, batch=batch, generate_plots=generate_plots
                 )
-                image_names.append(image_metrics["image_name"])
-                binary_dice_scores.append(image_metrics["binary_dice_score"])
-                binary_jaccard_scores.append(image_metrics["binary_jaccard_score"])
-                pq_scores.append(image_metrics["pq_score"])
-                dq_scores.append(image_metrics["dq_score"])
-                sq_scores.append(image_metrics["sq_score"])
-                f1_ds.append(image_metrics["f1_d"])
-                prec_ds.append(image_metrics["prec_d"])
-                rec_ds.append(image_metrics["rec_d"])
+                if self.eval:
+                    image_names.append(image_metrics["image_name"])
+                    binary_dice_scores.append(image_metrics["binary_dice_score"])
+                    binary_jaccard_scores.append(image_metrics["binary_jaccard_score"])
+                    pq_scores.append(image_metrics["pq_score"])
+                    dq_scores.append(image_metrics["dq_score"])
+                    sq_scores.append(image_metrics["sq_score"])
+                    f1_ds.append(image_metrics["f1_d"])
+                    prec_ds.append(image_metrics["prec_d"])
+                    rec_ds.append(image_metrics["rec_d"])
 
         # average metrics for dataset
-        binary_dice_scores = np.array(binary_dice_scores)
-        binary_jaccard_scores = np.array(binary_jaccard_scores)
-        pq_scores = np.array(pq_scores)
-        dq_scores = np.array(dq_scores)
-        sq_scores = np.array(sq_scores)
-        f1_ds = np.array(f1_ds)
-        prec_ds = np.array(prec_ds)
-        rec_ds = np.array(rec_ds)
+        if self.eval:
+            binary_dice_scores = np.array(binary_dice_scores)
+            binary_jaccard_scores = np.array(binary_jaccard_scores)
+            pq_scores = np.array(pq_scores)
+            dq_scores = np.array(dq_scores)
+            sq_scores = np.array(sq_scores)
+            f1_ds = np.array(f1_ds)
+            prec_ds = np.array(prec_ds)
+            rec_ds = np.array(rec_ds)
 
-        dataset_metrics = {
-            "Binary-Cell-Dice-Mean": float(np.nanmean(binary_dice_scores)),
-            "Binary-Cell-Jacard-Mean": float(np.nanmean(binary_jaccard_scores)),
-            "bPQ": float(np.nanmean(pq_scores)),
-            "bDQ": float(np.nanmean(dq_scores)),
-            "bSQ": float(np.nanmean(sq_scores)),
-            "f1_detection": float(np.nanmean(f1_ds)),
-            "precision_detection": float(np.nanmean(prec_ds)),
-            "recall_detection": float(np.nanmean(rec_ds)),
-        }
-        self.logger.info(f"{20*'*'} Binary Dataset metrics {20*'*'}")
-        [self.logger.info(f"{f'{k}:': <25} {v}") for k, v in dataset_metrics.items()]
+            dataset_metrics = {
+                "Binary-Cell-Dice-Mean": float(np.nanmean(binary_dice_scores)),
+                "Binary-Cell-Jacard-Mean": float(np.nanmean(binary_jaccard_scores)),
+                "bPQ": float(np.nanmean(pq_scores)),
+                "bDQ": float(np.nanmean(dq_scores)),
+                "bSQ": float(np.nanmean(sq_scores)),
+                "f1_detection": float(np.nanmean(f1_ds)),
+                "precision_detection": float(np.nanmean(prec_ds)),
+                "recall_detection": float(np.nanmean(rec_ds)),
+            }
+            self.logger.info(f"{20*'*'} Binary Dataset metrics {20*'*'}")
+            [self.logger.info(f"{f'{k}:': <25} {v}") for k, v in dataset_metrics.items()]
 
     def inference_step(
         self, model: nn.Module, batch: object, generate_plots: bool = False
@@ -315,12 +322,14 @@ class MoNuSegInference:
         if len(img.shape) > 4:
             img = img[0]
             img = rearrange(img, "c i j w h -> (i j) c w h")
-        mask = batch[1]
         image_name = list(batch[2])
         print(image_name)
-        mask["instance_types"] = calculate_instances(
-            torch.unsqueeze(mask["nuclei_binary_map"], dim=0), mask["instance_map"]
-        )
+
+        if self.eval:
+            mask = batch[1]
+            mask["instance_types"] = calculate_instances(
+                torch.unsqueeze(mask["nuclei_binary_map"], dim=0), mask["instance_map"]
+            )
 
         model.zero_grad()
 
@@ -334,24 +343,26 @@ class MoNuSegInference:
             if self.patching:
                 predictions_ = self.post_process_patching(predictions_)
             predictions = self.get_cell_predictions(predictions_)
-            image_metrics = self.calculate_step_metric(
-                predictions=predictions, gt=mask, image_name=image_name
-            )
+            if self.eval:
+                image_metrics = self.calculate_step_metric(
+                    predictions=predictions, gt=mask, image_name=image_name
+                )
 
         elif self.patching and self.overlap != 0:
             cell_list = self.post_process_patching_overlap(
                 predictions_, overlap=self.overlap
             )
-            image_metrics, predictions = self.calculate_step_metric_overlap(
-                cell_list=cell_list, gt=mask, image_name=image_name
-            )
-
-        scores = [
-            float(image_metrics["binary_dice_score"].detach().cpu()),
-            float(image_metrics["binary_jaccard_score"].detach().cpu()),
-            image_metrics["pq_score"],
-        ]
-        if generate_plots:
+            if self.eval:
+                image_metrics, predictions = self.calculate_step_metric_overlap(
+                    cell_list=cell_list, gt=mask, image_name=image_name
+                )
+        if self.eval:
+            scores = [
+                float(image_metrics["binary_dice_score"].detach().cpu()),
+                float(image_metrics["binary_jaccard_score"].detach().cpu()),
+                image_metrics["pq_score"],
+            ]
+        if generate_plots and self.eval:
             if self.overlap == 0 and self.patching:
                 batch_size = img.shape[0]
                 num_elems = int(np.sqrt(batch_size))
@@ -375,6 +386,25 @@ class MoNuSegInference:
                 img = total_img
                 img = img[None, :, :, :]
             self.plot_results(
+                img=img,
+                predictions=predictions,
+                ground_truth=mask,
+                img_name=image_name[0],
+                outdir=self.outdir,
+                scores=scores,
+            )
+
+        elif generate_plots and not self.eval:
+            if self.overlap == 0 and self.patching:
+                batch_size = img.shape[0]
+                num_elems = int(np.sqrt(batch_size))
+                img = torch.permute(img, (0, 2, 3, 1))
+                img = rearrange(
+                    img, "(i j) h w c -> (i h) (j w) c", i=num_elems, j=num_elems
+                )
+                img = torch.unsqueeze(img, dim=0)
+                img = torch.permute(img, (0, 3, 1, 2))
+            self.plot_results_no_eval(
                 img=img,
                 predictions=predictions,
                 ground_truth=mask,
@@ -833,6 +863,8 @@ class MoNuSegInference:
         h = ground_truth["instance_map"].shape[1]
         w = ground_truth["instance_map"].shape[2]
 
+        print("shape: " + ground_truth["instance_map"].shape)
+
         # process image and other maps
         sample_image = img.permute(0, 2, 3, 1).contiguous().cpu().numpy()
 
@@ -855,6 +887,194 @@ class MoNuSegInference:
             ground_truth["nuclei_binary_map"].detach().cpu().numpy()[0]
         ).astype(np.float16)
         gt_sample_instance_map = ground_truth["instance_map"].detach().cpu().numpy()[0]
+
+        binary_cmap = plt.get_cmap("Greys_r")
+        instance_map = plt.get_cmap("viridis")
+
+        # invert the normalization of the sample images
+        transform_settings = self.run_conf["transformations"]
+        if "normalize" in transform_settings:
+            mean = transform_settings["normalize"].get("mean", (0.5, 0.5, 0.5))
+            std = transform_settings["normalize"].get("std", (0.5, 0.5, 0.5))
+        else:
+            mean = (0.5, 0.5, 0.5)
+            std = (0.5, 0.5, 0.5)
+        inv_normalize = transforms.Normalize(
+            mean=[-0.5 / mean[0], -0.5 / mean[1], -0.5 / mean[2]],
+            std=[1 / std[0], 1 / std[1], 1 / std[2]],
+        )
+        inv_samples = inv_normalize(torch.tensor(sample_image).permute(0, 3, 1, 2))
+        sample_image = inv_samples.permute(0, 2, 3, 1).detach().cpu().numpy()[0]
+
+        # start overlaying on image
+        placeholder = np.zeros((2 * h, 4 * w, 3))
+        # orig image
+        placeholder[:h, :w, :3] = sample_image
+        placeholder[h : 2 * h, :w, :3] = sample_image
+        # binary prediction
+        placeholder[:h, w : 2 * w, :3] = rgba2rgb(
+            binary_cmap(gt_sample_binary_map * 255)
+        )
+        placeholder[h : 2 * h, w : 2 * w, :3] = rgba2rgb(
+            binary_cmap(pred_sample_binary_map * 255)
+        )
+
+        # instance_predictions
+        placeholder[:h, 2 * w : 3 * w, :3] = rgba2rgb(
+            instance_map(
+                (gt_sample_instance_map - np.min(gt_sample_instance_map))
+                / (
+                    np.max(gt_sample_instance_map)
+                    - np.min(gt_sample_instance_map + 1e-10)
+                )
+            )
+        )
+        placeholder[h : 2 * h, 2 * w : 3 * w, :3] = rgba2rgb(
+            instance_map(
+                (pred_sample_instance_maps - np.min(pred_sample_instance_maps))
+                / (
+                    np.max(pred_sample_instance_maps)
+                    - np.min(pred_sample_instance_maps + 1e-10)
+                )
+            )
+        )
+        gt_contours_polygon = [
+            v["contour"] for v in ground_truth["instance_types"][0].values()
+        ]
+        gt_contours_polygon = [
+            list(zip(poly[:, 0], poly[:, 1])) for poly in gt_contours_polygon
+        ]
+        gt_contour_colors_polygon = ["#70c6ff" for i in range(len(gt_contours_polygon))]
+        gt_cell_image = Image.fromarray((sample_image * 255).astype(np.uint8)).convert(
+            "RGB"
+        )
+        gt_drawing = ImageDraw.Draw(gt_cell_image)
+        add_patch = lambda poly, color: gt_drawing.polygon(poly, outline=color, width=2)
+        [
+            add_patch(poly, c)
+            for poly, c in zip(gt_contours_polygon, gt_contour_colors_polygon)
+        ]
+        placeholder[:h, 3 * w : 4 * w, :3] = np.asarray(gt_cell_image) / 255
+        # pred
+        pred_contours_polygon = [
+            v["contour"] for v in predictions["instance_types"].values()
+        ]
+        pred_contours_polygon = [
+            list(zip(poly[:, 0], poly[:, 1])) for poly in pred_contours_polygon
+        ]
+        pred_contour_colors_polygon = [
+            "#70c6ff" for i in range(len(pred_contours_polygon))
+        ]
+        pred_cell_image = Image.fromarray(
+            (sample_image * 255).astype(np.uint8)
+        ).convert("RGB")
+        pred_drawing = ImageDraw.Draw(pred_cell_image)
+        add_patch = lambda poly, color: pred_drawing.polygon(
+            poly, outline=color, width=2
+        )
+        [
+            add_patch(poly, c)
+            for poly, c in zip(pred_contours_polygon, pred_contour_colors_polygon)
+        ]
+        placeholder[h : 2 * h, 3 * w : 4 * w, :3] = np.asarray(pred_cell_image) / 255
+
+        # plotting
+        test_image = Image.fromarray((placeholder * 255).astype(np.uint8))
+        test_image.save(plot_dir / f"raw_{img_name}")
+        fig, axs = plt.subplots(figsize=(3, 2), dpi=1200)
+        axs.imshow(placeholder)
+        axs.set_xticks(np.arange(w / 2, 4 * w, w))
+        axs.set_xticklabels(
+            [
+                "Image",
+                "Binary-Cells",
+                "Instances",
+                "Countours",
+            ],
+            fontsize=6,
+        )
+        axs.xaxis.tick_top()
+
+        axs.set_yticks(np.arange(h / 2, 2 * h, h))
+        axs.set_yticklabels(["GT", "Pred."], fontsize=6)
+        axs.tick_params(axis="both", which="both", length=0)
+        grid_x = np.arange(w, 3 * w, w)
+        grid_y = np.arange(h, 2 * h, h)
+
+        for x_seg in grid_x:
+            axs.axvline(x_seg, color="black")
+        for y_seg in grid_y:
+            axs.axhline(y_seg, color="black")
+
+        if scores is not None:
+            axs.text(
+                20,
+                1.85 * h,
+                f"Dice: {str(np.round(scores[0], 2))}\nJac.: {str(np.round(scores[1], 2))}\nbPQ: {str(np.round(scores[2], 2))}",
+                bbox={"facecolor": "white", "pad": 2, "alpha": 0.5},
+                fontsize=4,
+            )
+        fig.suptitle(f"Patch Predictions for {img_name}", fontsize=6)
+        fig.tight_layout()
+        fig.savefig(plot_dir / f"pred_{img_name}")
+        plt.close()
+
+
+    def plot_results_no_eval(
+        self,
+        img: torch.Tensor,
+        predictions: dict,
+        img_name: str,
+        outdir: Path,
+        scores: List[float],
+    ) -> None:
+        """Plot MoNuSeg results
+
+        Args:
+            img (torch.Tensor): Image as torch.Tensor, with Shape (1, 3, 1024, 1024) or (1, 3, 512, 512)
+            predictions (dict): Prediction dictionary. Necessary keys:
+                * nuclei_binary_map: Shape (1, 2, 1024, 1024) or (1, 2, 512, 512)
+                * instance_map: Shape (1, 1024, 1024) or (1, 512, 512)
+                * instance_types: List[dict], but just one entry in list
+            ground_truth (dict): Ground-Truth dictionary. Necessary keys:
+                * nuclei_binary_map: (1, 1024, 1024) or or (1, 512, 512)
+                * instance_map: (1, 1024, 1024) or or (1, 512, 512)
+                * instance_types: List[dict], but just one entry in list
+            img_name (str): Image name as string
+            outdir (Path): Output directory for storing
+            scores (List[float]): Scores as list [Dice, Jaccard, bPQ]
+        """
+        plot_dir = Path(outdir) / "plots"
+        plot_dir.mkdir(exist_ok=True, parents=True)
+
+        results_dir = Path(outdir) / "results"
+        results_dir.mkdir(exist_ok=True, parents=True)
+
+        h = ground_truth["instance_map"].shape[1]
+        w = ground_truth["instance_map"].shape[2]
+
+
+        predictions["nuclei_binary_map"] = predictions["nuclei_binary_map"].permute(
+            0, 2, 3, 1
+        )
+
+        # process image and other maps
+        sample_image = img.permute(0, 2, 3, 1).contiguous().cpu().numpy()
+
+        pred_sample_binary_map = (
+            predictions["nuclei_binary_map"][:, :, :, 1].detach().cpu().numpy()
+        )[0]
+        pred_sample_instance_maps = (
+            predictions["instance_map"].detach().cpu().numpy()[0]
+        )
+        pred_sample_type_maps = (
+            predictions["nuclei_type_map"].detach().cpu().numpy()
+        )
+
+        #save results for eval
+        result_dict = {"inst_map": pred_sample_instance_maps, "type_map": pred_sample_type_maps}
+        np.save(results_dir / f"{img_name[:-4]}.npy",
+                result_dict)
 
         binary_cmap = plt.get_cmap("Greys_r")
         instance_map = plt.get_cmap("viridis")
@@ -1042,6 +1262,12 @@ class InferenceCellViTMoNuSegParser:
             help="Generate inference plots in run_dir",
         )
 
+        parser.add_argument(
+            "--eval",
+            action="store_true",
+            help="Generate inference plots in run_dir",
+        )
+
         self.parser = parser
 
     def parse_arguments(self) -> dict:
@@ -1062,5 +1288,6 @@ if __name__ == "__main__":
         patching=configuration["patching"],
         magnification=configuration["magnification"],
         overlap=configuration["overlap"],
+        eval=configuration["eval"]
     )
     inf.run_inference(generate_plots=configuration["plots"])

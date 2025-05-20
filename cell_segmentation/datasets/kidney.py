@@ -31,6 +31,7 @@ class KidneyDataset(Dataset):
         transforms: Callable = None,
         patching: bool = False,
         overlap: int = 0,
+        eval: bool = False
     ) -> None:
         """MoNuSeg Dataset
 
@@ -49,18 +50,24 @@ class KidneyDataset(Dataset):
         self.img_names = []
         self.patching = patching
         self.overlap = overlap
+        self.eval = eval
 
-        image_path = self.dataset / "images"
-        label_path = self.dataset / "labels"
-        self.images = [f for f in sorted(image_path.glob("*.png")) if f.is_file()]
-        self.masks = [f for f in sorted(label_path.glob("*.npy")) if f.is_file()]
+        if self.eval:
+            image_path = self.dataset / "images"
+            label_path = self.dataset / "labels"
+            self.images = [f for f in sorted(image_path.glob("*.png")) if f.is_file()]
+            self.masks = [f for f in sorted(label_path.glob("*.npy")) if f.is_file()]
 
-        # sanity_check
-        for idx, image in enumerate(self.images):
-            image_name = image.stem
-            mask_name = self.masks[idx].stem
-            if image_name != mask_name:
-                raise FileNotFoundError(f"Annotation for file {image_name} is missing")
+            # sanity_check
+            for idx, image in enumerate(self.images):
+                image_name = image.stem
+                mask_name = self.masks[idx].stem
+                if image_name != mask_name:
+                    raise FileNotFoundError(f"Annotation for file {image_name} is missing")
+        else:
+            image_path = self.dataset
+            self.images = [f for f in sorted(image_path.glob("*.png")) if f.is_file()]
+
 
     def __getitem__(self, index: int) -> Tuple[torch.Tensor, dict, str]:
         """Get one item from dataset
@@ -77,60 +84,68 @@ class KidneyDataset(Dataset):
         img_path = self.images[index]
         img = np.array(Image.open(img_path)).astype(np.uint8)
 
-        mask_path = self.masks[index]
-        mask = np.load(mask_path, allow_pickle=True)
-        inst_map = mask[()]["inst_map"].astype(np.int32)
-        type_map = mask[()]["type_map"].astype(np.int32)
-        mask = np.stack([inst_map, type_map], axis=-1)
+        if self.eval:
 
-        if self.transforms is not None:
-            transformed = self.transforms(image=img, mask=mask)
-            img = transformed["image"]
-            mask = transformed["mask"]
+            mask_path = self.masks[index]
+            mask = np.load(mask_path, allow_pickle=True)
+            inst_map = mask[()]["inst_map"].astype(np.int32)
+            type_map = mask[()]["type_map"].astype(np.int32)
+            mask = np.stack([inst_map, type_map], axis=-1)
 
-        inst_map = mask[:, :, 0].copy()
-        type_map = mask[:, :, 1].copy()
-        np_map = mask[:, :, 0].copy()
-        np_map[np_map > 0] = 1
-        hv_map = PanNukeDataset.gen_instance_hv_map(inst_map)
+            if self.transforms is not None:
+                transformed = self.transforms(image=img, mask=mask)
+                img = transformed["image"]
+                mask = transformed["mask"]
 
-        # torch convert
-        img = torch.Tensor(img).type(torch.float32)
-        img = img.permute(2, 0, 1)
-        if torch.max(img) >= 5:
-            img = img / 255
+            inst_map = mask[:, :, 0].copy()
+            type_map = mask[:, :, 1].copy()
+            np_map = mask[:, :, 0].copy()
+            np_map[np_map > 0] = 1
+            hv_map = PanNukeDataset.gen_instance_hv_map(inst_map)
 
-        masks = {
-            "instance_map": torch.Tensor(inst_map).type(torch.int64),
-            "nuclei_type_map": torch.Tensor(type_map).type(torch.int64),
-            "nuclei_binary_map": torch.Tensor(np_map).type(torch.int64),
-            "hv_map": torch.Tensor(hv_map).type(torch.float32),
-        }
+            # torch convert
+            img = torch.Tensor(img).type(torch.float32)
+            img = img.permute(2, 0, 1)
+            if torch.max(img) >= 5:
+                img = img / 255
 
-        # hv_map = PanNukeDataset.gen_instance_hv_map(mask)
-        # np_map = mask.copy()
-        # np_map[np_map > 0] = 1
-        #
-        # # torch convert
-        # img = torch.Tensor(img).type(torch.float32)
-        # img = img.permute(2, 0, 1)
-        # if torch.max(img) >= 5:
-        #     img = img / 255
+            masks = {
+                "instance_map": torch.Tensor(inst_map).type(torch.int64),
+                "nuclei_type_map": torch.Tensor(type_map).type(torch.int64),
+                "nuclei_binary_map": torch.Tensor(np_map).type(torch.int64),
+                "hv_map": torch.Tensor(hv_map).type(torch.float32),
+            }
 
-        if self.patching and self.overlap == 0:
-            img = rearrange(img, "c (h i) (w j) -> c h w i j", i=256, j=256)
-        if self.patching and self.overlap != 0:
-            img = img.unfold(1, 256, 256 - self.overlap).unfold(
-                2, 256, 256 - self.overlap
-            )
+            if self.patching and self.overlap == 0:
+                img = rearrange(img, "c (h i) (w j) -> c h w i j", i=256, j=256)
+            if self.patching and self.overlap != 0:
+                img = img.unfold(1, 256, 256 - self.overlap).unfold(
+                    2, 256, 256 - self.overlap
+                )
 
-        # masks = {
-        #     "instance_map": torch.Tensor(mask).type(torch.int64),
-        #     "nuclei_binary_map": torch.Tensor(np_map).type(torch.int64),
-        #     "hv_map": torch.Tensor(hv_map).type(torch.float32),
-        # }
+            return img, masks, Path(img_path).name
+        else:
+            if self.transforms is not None:
+                transformed = self.transforms(image=img)
+                img = transformed["image"]
 
-        return img, masks, Path(img_path).name
+            # torch convert
+            img = torch.Tensor(img).type(torch.float32)
+            img = img.permute(2, 0, 1)
+            if torch.max(img) >= 5:
+                img = img / 255
+
+            if self.patching and self.overlap == 0:
+                img = rearrange(img, "c (h i) (w j) -> c h w i j", i=256, j=256)
+            if self.patching and self.overlap != 0:
+                img = img.unfold(1, 256, 256 - self.overlap).unfold(
+                    2, 256, 256 - self.overlap
+                )
+
+            return img, None, Path(img_path).name
+
+
+
 
     def __len__(self) -> int:
         """Length of Dataset
